@@ -13,7 +13,7 @@ The Regulatory Risk Assessment Agent is a multi-agent system that analyzes compl
 ## Architecture
 
 ### Main Orchestrator Agent
-**File:** `risk_assessment_agent/agent.py`
+**File:** `agents/agent.py`
 
 The main agent acts as a router and orchestrator. It:
 - Receives user queries

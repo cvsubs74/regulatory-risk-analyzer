@@ -8,7 +8,7 @@ set -e
 PROJECT_ID=${GOOGLE_CLOUD_PROJECT:-"graph-rag-app-20250811"}
 REGION=${GOOGLE_CLOUD_LOCATION:-"us-east1"}
 SERVICE_NAME="regulatory-risk-assessment-agent"
-AGENT_PATH="risk_assessment_agent"
+AGENT_PATH="agents"
 
 # Display configuration
 echo "========================================="
@@ -73,8 +73,8 @@ echo ""
 echo "========================================="
 echo "✅ Backend deployment completed!"
 echo "========================================="
-echo "Backend API URL: $SERVICE_URL"
-echo "Environment variables loaded from $AGENT_PATH/.env"
+echo "Backend API URL: https://${SERVICE_NAME}-pt7snlxyuq-ue.a.run.app"
+echo "Environment variables loaded from agents/.env"
 echo ""
 echo "To test the backend:"
 echo "  curl $SERVICE_URL/health"
