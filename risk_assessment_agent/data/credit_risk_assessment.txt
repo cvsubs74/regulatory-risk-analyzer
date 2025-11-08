@@ -1,0 +1,85 @@
+# Business Process: International Credit Risk Assessment and Scoring
+
+## Purpose
+This process evaluates creditworthiness of customers across multiple jurisdictions to determine loan eligibility, credit limits, and interest rates. It involves sharing financial data with credit bureaus and risk assessment partners globally.
+
+## Processing Activities
+
+### Data Collection
+Primary systems:
+- **Loan Application System**: Collects applicant information including FullName, DateOfBirth, SocialSecurityNumber, EmploymentHistory, IncomeInformation, and HomeAddress
+- **Banking Integration Platform**: Retrieves BankAccountNumber, TransactionHistory, and AccountBalance from linked bank accounts
+- **Credit Bureau Connector**: Queries external credit bureaus for CreditScore and CreditHistory
+
+### Risk Assessment
+The **Credit Risk Engine** (hosted in us-east-1) processes:
+- Income Information
+- Employment History
+- Transaction History
+- Credit Score
+- Existing Debt Information
+- Payment History
+
+### Cross-Border Data Sharing
+For international applicants, data is shared with:
+- **Experian International** (UK-based): Receives FullName, DateOfBirth, SocialSecurityNumber, and IncomeInformation for EU applicants
+- **TransUnion Global** (US-based): Receives complete financial profile for credit verification
+- **CIBIL India**: Receives applicant data for Indian nationals including PassportNumber and TaxIdentificationNumber
+
+### Third-Party Processors
+- **RiskAnalytics Pro** (Data Processor, Canada-based): Receives pseudonymized financial data to build predictive default models
+- **FraudDetect Solutions** (Data Processor, Australia-based): Receives TransactionHistory, IPAddress, and DeviceID to detect fraudulent applications
+- **Income Verification Services** (Data Processor, US-based): Receives EmploymentHistory and IncomeInformation to verify applicant claims
+
+### Automated Decision Making
+The system makes automated credit decisions based on:
+- Credit score thresholds
+- Debt-to-income ratios
+- Employment stability indicators
+- Transaction pattern analysis
+
+### Data Elements Processed
+- Full Name
+- Date of Birth
+- Social Security Number
+- Passport Number
+- Tax Identification Number
+- Home Address
+- Email Address
+- Phone Number
+- Bank Account Number
+- Credit Score
+- Income Information
+- Employment History
+- Transaction History
+- Payment Information
+- IP Address
+- Device ID
+
+### Data Subject Types
+- Loan Applicants
+- Borrowers
+- Guarantors
+- Account Holders
+
+## Legal Basis
+- Contractual Necessity (for loan processing)
+- Legitimate Interest (for fraud prevention and risk assessment)
+- Legal Obligation (for anti-money laundering checks)
+
+## Cross-Border Transfer Mechanisms
+- Standard Contractual Clauses (for EU data transfers)
+- Binding Corporate Rules (for intra-group transfers)
+- Adequacy Decisions (for transfers to approved jurisdictions)
+
+## Retention Period
+- Approved applications: 7 years from loan closure (regulatory requirement)
+- Rejected applications: 3 years from decision date
+- Credit bureau queries: 2 years from query date
+- Fraud detection data: 5 years from detection
+
+## Data Subject Rights
+- Right to access credit decision rationale
+- Right to human review of automated decisions
+- Right to rectification of inaccurate data
+- Right to erasure (subject to legal retention requirements)

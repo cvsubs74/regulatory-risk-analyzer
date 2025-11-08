@@ -1,0 +1,125 @@
+# Business Process: Global Workforce Monitoring and Productivity Analytics
+
+## Purpose
+This process monitors employee activities, productivity metrics, and workplace behavior across international offices to optimize workforce allocation, identify training needs, detect insider threats, and ensure compliance with company policies. Data is shared with HR analytics vendors and productivity consultants.
+
+## Processing Activities
+
+### Data Collection Systems
+Primary monitoring assets:
+- **Employee Monitoring Software** (installed on all company devices): Captures KeystrokeLogging, ScreenCaptures, ApplicationUsage, WebsitesVisited, and ActiveHours
+- **Email Monitoring System**: Scans all corporate emails for EmailContent, Attachments, SendReceivePatterns, and PolicyViolations
+- **Physical Access Control System**: Tracks BadgeSwipes, OfficeEntryExitTimes, and MeetingRoomUsage
+- **Video Surveillance System**: Records employee movements in office spaces with FacialRecognition capabilities
+- **Collaboration Platform Analytics**: Monitors SlackMessages, VideoConferenceDuration, FileSharing, and TeamCollaboration patterns
+
+### Productivity Scoring
+The **Workforce Analytics Engine** (hosted in us-west-2) processes employee data to generate:
+- Individual productivity scores
+- Team performance metrics
+- Time utilization analysis
+- Collaboration effectiveness ratings
+- Risk scores for potential policy violations or insider threats
+
+### Cross-Border Data Flows
+Employee monitoring data flows globally:
+- **EU Office Data**: Transferred from eu-west-1 to us-west-2 for centralized analytics (requires Article 88 GDPR compliance for employee monitoring)
+- **APAC Office Data**: Transferred from ap-southeast-1 to us-west-2
+- **Latin America Office Data**: Transferred from sa-east-1 to us-west-2
+
+### Third-Party Data Sharing
+Monitoring data shared with:
+- **ProductivityPro Consulting** (US-based): Receives anonymized productivity metrics, ApplicationUsage, and TimeUtilization data to provide workforce optimization recommendations
+- **ThreatDetect Security** (Israel-based): Receives EmailContent, FileAccessLogs, and AnomalousActivityAlerts to identify insider threat risks
+- **HR Analytics Cloud** (Ireland-based): Receives employee performance data including ProductivityScores, CollaborationMetrics, and AttendanceRecords for predictive attrition modeling
+- **Background Check Services** (UK-based): Receives employee OnlineActivity and SocialMediaProfiles for ongoing background monitoring
+
+### Automated Decision Making
+The system makes automated decisions on:
+- Performance review ratings (based on productivity scores)
+- Bonus allocation recommendations
+- Promotion eligibility assessments
+- Disciplinary action triggers (for policy violations)
+- Access privilege adjustments (based on risk scores)
+
+### Data Elements Processed
+- Full Name
+- Employee ID
+- Email Address
+- Phone Number
+- Home Address
+- Social Security Number
+- Performance Review Data
+- Salary Information
+- Keystroke Logging
+- Screen Captures
+- Application Usage
+- Websites Visited
+- Email Content
+- Collaboration Messages
+- Video Surveillance Footage
+- Biometric Data (facial recognition, fingerprints for access)
+- Location Data (office badge swipes, GPS from company devices)
+- Active Hours and Attendance Records
+
+### Data Subject Types
+- Employees (all levels)
+- Contractors
+- Interns
+- Remote Workers
+- Executives
+- Former Employees (for 90 days post-termination)
+
+## Legal Basis
+- Contractual Necessity (employment contract terms)
+- Legitimate Interest (workplace security, productivity optimization)
+- Legal Obligation (compliance monitoring, audit requirements)
+- Consent (for certain monitoring activities in EU jurisdictions)
+
+## Cross-Border Transfer Mechanisms
+- Binding Corporate Rules for employee data
+- Standard Contractual Clauses with third-party processors
+- Adequacy decisions where applicable
+- Employee consent for transfers (in jurisdictions requiring it)
+
+## Employee Rights and Transparency
+- Employees notified of monitoring via:
+  - Employment contract clauses
+  - Workplace monitoring policy
+  - Login banners on company devices
+  - Annual privacy notices
+- Right to access their monitoring data
+- Right to object to automated decision-making
+- Right to human review of performance assessments
+- Limited right to erasure (subject to legal retention requirements)
+
+## Retention Period
+- Active employee monitoring data: Duration of employment + 3 years
+- Performance reviews: 7 years from review date
+- Disciplinary records: 5 years from incident
+- Video surveillance: 30 days (90 days if incident flagged)
+- Email archives: 7 years (regulatory requirement)
+- Keystroke logs: 90 days rolling window
+
+## Data Protection Measures
+- Encryption of all monitoring data in transit and at rest
+- Role-based access (only HR, IT Security, and authorized managers)
+- Audit logs for all data access
+- Anonymization before sharing with third-party consultants
+- Regular privacy impact assessments
+- Data minimization reviews quarterly
+
+## Compliance Considerations
+- GDPR Article 88 (employee data processing)
+- Works Council consultation requirements (EU)
+- Employee notification requirements (California CPRA)
+- Biometric data regulations (Illinois BIPA, GDPR Article 9)
+- Video surveillance laws (varies by jurisdiction)
+- Email monitoring disclosure requirements
+
+## Ethical Concerns
+- Balance between productivity monitoring and employee privacy
+- Potential for discriminatory outcomes from automated scoring
+- Psychological impact of constant surveillance
+- Trust and morale implications
+- Compliance with local labor laws and union agreements

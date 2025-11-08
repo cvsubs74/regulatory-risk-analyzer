@@ -1,0 +1,107 @@
+# Business Process: Multi-National Healthcare Research and Clinical Trial Data Sharing
+
+## Purpose
+This process facilitates collaborative medical research by aggregating patient data from multiple healthcare providers and sharing de-identified datasets with pharmaceutical companies, research institutions, and government health agencies for drug development, disease surveillance, and public health initiatives.
+
+## Processing Activities
+
+### Data Collection
+Primary healthcare systems:
+- **Electronic Health Records (EHR) System**: Contains comprehensive patient data including MedicalHistory, PrescriptionInformation, VitalSigns, LabResults, and DiagnosisCodes
+- **Hospital Information System**: Stores patient demographics (FullName, DateOfBirth, HomeAddress, InsuranceInformation) and treatment records
+- **Clinical Trial Management Platform**: Tracks trial participants with TrialID, ConsentRecords, AdverseEventReports, and TreatmentOutcomes
+
+### Data Aggregation and De-identification
+The **Research Data Warehouse** (hosted in us-east-1) aggregates data from:
+- 15 hospital networks across US, EU, and Canada
+- 200+ clinical trial sites globally
+- National health registries from participating countries
+
+De-identification process:
+- Remove direct identifiers (Name, SSN, Medical Record Number)
+- Generalize quasi-identifiers (Age to age ranges, ZIP codes to regions)
+- Apply k-anonymity (k=5) and l-diversity techniques
+- Generate synthetic identifiers for longitudinal tracking
+
+### Cross-Border Data Transfers
+Patient data flows internationally:
+- **EU to US**: Clinical trial data from EU sites transferred to US-based Research Data Warehouse (requires GDPR Article 49 derogation for scientific research)
+- **US to Switzerland**: Genomic data shared with Swiss pharmaceutical research labs
+- **Canada to UK**: Population health data shared with UK National Health Service for comparative studies
+
+### Third-Party Data Sharing
+De-identified datasets shared with:
+- **PharmaCorp International** (Switzerland): Receives de-identified clinical trial data including GeneticData, TreatmentOutcomes, and AdverseEventReports for drug efficacy studies
+- **University Medical Research Consortium** (Multi-national): Receives anonymized patient cohorts with MedicalHistory, VitalSigns, and LabResults for epidemiological research
+- **Government Health Agencies** (US FDA, EMA, Health Canada): Receives adverse event reports and safety surveillance data
+- **AI Diagnostics Inc** (US): Receives medical imaging data and DiagnosisCodes to train diagnostic algorithms
+
+### Special Category Data Processing
+Processing of sensitive health data:
+- Genetic Data
+- Mental Health Information
+- HIV/AIDS status
+- Substance abuse treatment records
+- Reproductive health information
+
+### Data Elements Processed
+- Full Name (pre-de-identification)
+- Date of Birth
+- Social Security Number (pre-de-identification)
+- Medical Record Number (pre-de-identification)
+- Home Address
+- Insurance Information
+- Medical History
+- Prescription Information
+- Genetic Data
+- Vital Signs
+- Lab Results
+- Diagnosis Codes
+- Treatment Outcomes
+- Adverse Event Reports
+- Mental Health Information
+
+### Data Subject Types
+- Patients
+- Clinical Trial Participants (Medical Research Subjects)
+- Healthcare Providers (for provider performance data)
+- Insurance Beneficiaries
+
+## Legal Basis
+- Explicit Consent (for clinical trial participation)
+- Public Interest in Public Health (for disease surveillance)
+- Scientific Research (under GDPR Article 89)
+- Legal Obligation (for adverse event reporting to regulators)
+
+## Cross-Border Transfer Mechanisms
+- Standard Contractual Clauses with additional safeguards for health data
+- GDPR Article 49 derogations for scientific research
+- Binding Corporate Rules for intra-group transfers
+- Institutional Review Board (IRB) approvals for research protocols
+
+## Data Protection Measures
+- End-to-end encryption for data in transit
+- Encryption at rest using AES-256
+- Role-based access controls with audit logging
+- Secure multi-party computation for collaborative analysis
+- Differential privacy techniques for aggregate statistics
+- Regular privacy impact assessments
+
+## Retention Period
+- Identified patient data: Duration of treatment + 10 years (regulatory requirement)
+- Clinical trial data: 25 years from trial completion (FDA requirement)
+- De-identified research datasets: Indefinite (for scientific reproducibility)
+- Genetic data: Subject to specific consent terms, typically 15-20 years
+
+## Data Subject Rights
+- Right to withdraw consent for research participation
+- Right to access their own health records
+- Right to restrict processing (subject to legal obligations)
+- Right to object to automated decision-making in diagnosis
+- Limited right to erasure (due to scientific research exemptions)
+
+## Ethical Oversight
+- Institutional Review Board (IRB) approval required for all research protocols
+- Data Safety Monitoring Board reviews for clinical trials
+- Ethics committee oversight for international data transfers
+- Patient advocacy group consultation for sensitive research areas

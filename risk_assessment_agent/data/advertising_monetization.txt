@@ -1,0 +1,79 @@
+# Business Process: Targeted Advertising and Data Monetization
+
+## Purpose
+This process leverages user behavioral data to deliver personalized advertisements and generates revenue by selling anonymized audience segments to advertising partners and data brokers.
+
+## Processing Activities
+
+### Data Collection
+Primary data sources:
+- **Mobile App Analytics Platform**: Collects DeviceID, AppUsageData, LocationData, and InAppPurchaseHistory
+- **Web Analytics System**: Collects Cookies, BrowsingHistory, SearchHistory, IPAddress, and ClickstreamData
+- **Social Media Integration API**: Collects SocialMediaActivity, UserInterests, and DemographicInformation
+
+### Profile Building
+The **User Profiling Engine** (hosted in us-west-2) combines data from all sources to create comprehensive user profiles containing:
+- Full Name
+- Email Address
+- Age
+- Gender
+- Location Data
+- Interests and Preferences
+- Purchase History
+- Browsing Behavior
+- Social Media Activity
+
+### Audience Segmentation
+Profiles are segmented into targetable audiences based on:
+- Demographics (Age, Gender, Location)
+- Behavioral patterns (Purchase frequency, Product preferences)
+- Psychographic attributes (Interests, Lifestyle indicators)
+
+### Third-Party Data Sales
+Anonymized audience segments are sold to:
+- **AdTech Partners Inc**: Receives anonymized audience segments with Age, Gender, LocationData, and InterestCategories
+- **DataBroker Global**: Receives pseudonymized datasets including BrowsingHistory, PurchaseHistory, and DemographicInformation
+- **Marketing Cloud Services**: Receives email lists (EmailAddress) with associated interest categories for targeted campaigns
+
+### Cross-Border Transfers
+- User profile data from EU users is transferred from eu-central-1 to us-west-2 for processing
+- Anonymized segments are distributed to partners globally, including:
+  - AdTech Partners Inc (US-based)
+  - DataBroker Global (UK-based)
+  - Marketing Cloud Services (Singapore-based)
+
+### Data Elements Processed
+- Email Address
+- Full Name
+- Device ID
+- IP Address
+- Cookies
+- Location Data
+- Browsing History
+- Search History
+- Purchase History
+- App Usage Data
+- Social Media Activity
+- Age
+- Gender
+- Interests and Preferences
+
+### Data Subject Types
+- Customers
+- Website Visitors
+- App Users
+- Social Media Followers
+
+## Legal Basis
+- Consent (for targeted advertising and data sales)
+- Legitimate Interest (for analytics and product improvement)
+
+## Retention Period
+- Raw behavioral data: 2 years from collection
+- User profiles: Active until user account deletion or opt-out
+- Sold data segments: Buyer must delete within 1 year per contractual terms
+
+## Privacy Controls
+- Users can opt-out of data sales via Privacy Settings Dashboard
+- Users can request deletion of their profile data
+- Anonymization applied before data transfer to third parties (k-anonymity threshold of 100)

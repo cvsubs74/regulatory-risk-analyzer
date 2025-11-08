@@ -1,0 +1,49 @@
+# Business Process: Global Customer Analytics and Insights
+
+## Purpose
+This process aggregates customer behavior data from multiple regions to generate business intelligence insights and predictive models for product development, marketing optimization, and revenue forecasting.
+
+## Processing Activities
+
+### Data Collection and Aggregation
+The process collects data from three primary assets:
+- **US Customer Database** (hosted in us-east-1): Contains UserID, PurchaseHistory, BrowsingBehavior, and PaymentInformation for US-based customers.
+- **EU Customer Database** (hosted in eu-west-1): Contains UserID, PurchaseHistory, BrowsingBehavior, and PaymentInformation for EU-based customers.
+- **APAC Customer Database** (hosted in ap-southeast-1): Contains UserID, PurchaseHistory, BrowsingBehavior, and PaymentInformation for APAC-based customers.
+
+### Cross-Border Data Transfer
+All regional data is transferred to the **Global Analytics Platform** (hosted in us-east-1) for centralized processing. This involves:
+- Transfer of EU customer data from eu-west-1 to us-east-1 (requires Standard Contractual Clauses under GDPR Article 46)
+- Transfer of APAC customer data from ap-southeast-1 to us-east-1 (requires adequacy assessment)
+
+### Third-Party Data Sharing
+The aggregated analytics are shared with:
+- **MarketInsights Corp** (Data Processor): Receives anonymized PurchaseHistory and BrowsingBehavior to generate market trend reports
+- **PredictiveAI Solutions** (Data Processor): Receives pseudonymized customer data including Age, Gender, LocationData, and PurchaseHistory to build predictive models
+
+### Data Elements Processed
+- Email Address
+- Full Name
+- Home Address
+- IP Address
+- Device ID
+- Purchase History
+- Browsing History
+- Location Data
+- Age
+- Gender
+- Payment Information
+
+### Data Subject Types
+- Customers (End Users)
+- Prospects (Potential Customers)
+- Trial Users
+
+## Legal Basis
+- Legitimate Interest (for business analytics)
+- Consent (for third-party sharing with MarketInsights Corp and PredictiveAI Solutions)
+
+## Retention Period
+- Raw customer data: 3 years from last interaction
+- Aggregated analytics: 7 years for business reporting
+- Shared data with third parties: Deleted within 90 days of contract termination
