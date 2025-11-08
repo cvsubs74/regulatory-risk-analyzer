@@ -12,8 +12,10 @@ from ..config import (
     DEFAULT_TOP_K,
 )
 from .utils import check_corpus_exists, get_corpus_resource_name
+from .tool_logger import log_tool_call
 
 
+@log_tool_call
 def rag_query(
     corpus_name: str,
     query: str,

@@ -11,8 +11,10 @@ from ..config import (
     DEFAULT_EMBEDDING_MODEL,
 )
 from .utils import check_corpus_exists
+from .tool_logger import log_tool_call
 
 
+@log_tool_call
 def create_corpus(
     corpus_name: str,
     tool_context: ToolContext,

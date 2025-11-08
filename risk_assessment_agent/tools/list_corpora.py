@@ -7,8 +7,10 @@ from typing import Dict, List, Union
 from vertexai import rag
 from google.adk.tools.tool_context import ToolContext
 from .utils import get_corpus_resource_name
+from .tool_logger import log_tool_call
 
 
+@log_tool_call
 def list_corpora(
     tool_context: ToolContext,
 ) -> dict:

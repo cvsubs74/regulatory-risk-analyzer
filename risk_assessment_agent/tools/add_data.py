@@ -14,8 +14,10 @@ from ..config import (
     DEFAULT_EMBEDDING_REQUESTS_PER_MIN,
 )
 from .utils import check_corpus_exists, get_corpus_resource_name
+from .tool_logger import log_tool_call
 
 
+@log_tool_call
 def add_data(
     corpus_name: str,
     paths: List[str],

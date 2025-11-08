@@ -3,10 +3,13 @@ Tool for saving uploaded files to Google Cloud Storage.
 """
 
 import base64
+import os
 from google.cloud import storage
-from google.adk.tools.tool_context import ToolContext
+from google.adk.tools import ToolContext
+from .tool_logger import log_tool_call
 
 
+@log_tool_call
 def save_file_to_gcs(
     file_data: str,
     filename: str,
