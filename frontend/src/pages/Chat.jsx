@@ -10,17 +10,17 @@ import riskAssessmentAPI from '../services/api';
 
 // Initial sample queries for quick start
 const INITIAL_QUERIES = [
-  'List all available corpora',
-  'What documents are in the data_v1 corpus?',
-  'Analyze GDPR compliance for our customer analytics process',
+  'What business processes are documented?',
+  'What regulations are available?',
+  'Analyze CCPA compliance for our customer analytics process',
   'What entity types are defined in the ontology?',
-  'Summarize the key points from the regulations corpus',
+  'Summarize the key points from available regulations',
   'How do we handle cross-border data transfers?',
   'What are the data retention requirements under CCPA?',
   'Explain our vendor data processing agreements',
 ];
 
-function Chat() {
+function Chat({ corpusFilter = null }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,8 +109,8 @@ function Chat() {
       const updatedMessages = [...messages, userMessage, assistantMessage];
       setMessages(updatedMessages);
       
-      // TODO: Re-enable dynamic suggestions after fixing the loop issue
-      // generateSuggestions(updatedMessages);
+      // Generate new suggestions after each response
+      generateSuggestions(updatedMessages);
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err.response?.data?.message || err.message || 'Failed to get response from agent');
@@ -135,8 +135,7 @@ function Chat() {
   };
 
   const handleSampleQuery = (query) => {
-    setInput(query);
-    // Automatically submit the selected question
+    // Don't populate text box, just send the question directly
     handleSendMessage(query);
   };
 
@@ -147,15 +146,28 @@ function Chat() {
 
   return (
     <div className="h-[calc(100vh-12rem)]">
-      <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-lg h-full flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-b border-gray-200 p-4">
-          <div className="flex items-center justify-between">
+        <div className="border-b border-gray-200 p-4 bg-gradient-to-r from-purple-50 to-blue-50 flex-shrink-0">
+          <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Chat with Your Documents</h1>
+              <h1 className="text-2xl font-bold text-gray-900">AI Assistant</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Ask anything about your documents, compliance, or data processing
+                {corpusFilter 
+                  ? `Ask questions about ${corpusFilter} only`
+                  : 'Ask questions across all documents - regulations, business data, and ontology'
+                }
               </p>
+              {!corpusFilter && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    All Documents
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Searches across all available knowledge bases
+                  </span>
+                </div>
+              )}
             </div>
             {messages.length > 0 && (
               <button
@@ -169,7 +181,7 @@ function Chat() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 min-h-0">
           {messages.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -179,18 +191,33 @@ function Chat() {
               <p className="text-gray-600 mb-6">
                 Ask me anything about your documents, compliance, data processing, or entity types
               </p>
-              <div className="max-w-2xl mx-auto">
-                <p className="text-sm font-medium text-gray-700 mb-3">Try these questions:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {suggestions.map((query, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSampleQuery(query)}
-                      className="px-4 py-2 text-sm text-left bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-                    >
-                      {query}
-                    </button>
-                  ))}
+              <div className="max-w-4xl mx-auto">
+                <p className="text-sm font-medium text-gray-700 mb-4">Try these questions:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {suggestions.map((query, index) => {
+                    // Color code based on index for variety
+                    const colors = [
+                      'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-400 text-blue-700',
+                      'bg-purple-50 hover:bg-purple-100 border-purple-200 hover:border-purple-400 text-purple-700',
+                      'bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-400 text-green-700',
+                      'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-400 text-orange-700',
+                      'bg-pink-50 hover:bg-pink-100 border-pink-200 hover:border-pink-400 text-pink-700',
+                      'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 hover:border-indigo-400 text-indigo-700',
+                      'bg-teal-50 hover:bg-teal-100 border-teal-200 hover:border-teal-400 text-teal-700',
+                      'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 hover:border-cyan-400 text-cyan-700',
+                    ];
+                    const colorClass = colors[index % colors.length];
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleSampleQuery(query)}
+                        className={`text-left px-4 py-3 text-sm rounded-xl transition-all border hover:shadow-sm ${colorClass}`}
+                      >
+                        <span className="block font-medium">{query}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -201,7 +228,7 @@ function Chat() {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-3xl rounded-lg px-4 py-3 ${
+                  className={`max-w-3xl rounded-lg px-4 py-3 break-words ${
                     message.role === 'user'
                       ? 'bg-primary text-white'
                       : message.isError
@@ -210,11 +237,11 @@ function Chat() {
                   }`}
                 >
                   {message.role === 'assistant' ? (
-                    <div className="markdown-content prose prose-sm max-w-none">
+                    <div className="markdown-content prose prose-sm max-w-none break-words overflow-wrap-anywhere">
                       <ReactMarkdown>{message.content}</ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   )}
                   <p className="text-xs mt-2 opacity-70">
                     {new Date(message.timestamp).toLocaleTimeString()}
@@ -236,24 +263,34 @@ function Chat() {
           
           {/* Suggestions after messages */}
           {messages.length > 0 && !loading && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm font-medium text-gray-700 mb-2">Suggested follow-up questions:</p>
+            <div className="mt-4">
+              <p className="text-xs font-medium text-gray-700 mb-2">Suggested follow-up questions:</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {loadingSuggestions ? (
                   <div className="col-span-2 flex items-center justify-center py-4">
-                    <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600 mr-2" />
+                    <ArrowPathIcon className="h-5 w-5 animate-spin text-purple-600 mr-2" />
                     <span className="text-sm text-gray-600">Generating suggestions...</span>
                   </div>
                 ) : (
-                  suggestions.map((query, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSampleQuery(query)}
-                      className="px-3 py-2 text-sm text-left bg-white text-blue-700 rounded-md hover:bg-blue-100 transition-colors border border-blue-300"
-                    >
-                      {query}
-                    </button>
-                  ))
+                  suggestions.map((query, index) => {
+                    const colors = [
+                      'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-400 text-blue-700',
+                      'bg-purple-50 hover:bg-purple-100 border-purple-200 hover:border-purple-400 text-purple-700',
+                      'bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-400 text-green-700',
+                      'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-400 text-orange-700',
+                    ];
+                    const colorClass = colors[index % colors.length];
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleSampleQuery(query)}
+                        className={`text-left px-3 py-2 text-sm rounded-lg transition-all border hover:shadow-sm ${colorClass}`}
+                      >
+                        <span className="block font-medium">{query}</span>
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -264,7 +301,7 @@ function Chat() {
 
         {/* Error Display */}
         {error && (
-          <div className="px-4 py-3 bg-red-50 border-t border-red-200">
+          <div className="px-4 py-3 bg-red-50 border-t border-red-200 flex-shrink-0">
             <div className="flex items-center text-red-800">
               <ExclamationCircleIcon className="h-5 w-5 mr-2" />
               <span className="text-sm">{error}</span>
@@ -273,7 +310,7 @@ function Chat() {
         )}
 
         {/* Input */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-4 flex-shrink-0">
           <div className="flex space-x-2">
             <textarea
               value={input}

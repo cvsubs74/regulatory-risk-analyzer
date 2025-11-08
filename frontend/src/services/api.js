@@ -127,6 +127,15 @@ const riskAssessmentAPI = {
   },
 
   /**
+   * List all documents in a corpus
+   * @param {string} corpusName - Name of the corpus
+   * @returns {Promise} - List of documents
+   */
+  async listDocuments(corpusName) {
+    return this.sendMessage(`Use the list_documents tool to list all documents in the ${corpusName} corpus. Return the document names and metadata in a clear format.`);
+  },
+
+  /**
    * Add a document to a corpus
    * @param {string} corpusName - Name of the corpus
    * @param {string[]} paths - Array of GCS paths or URLs
