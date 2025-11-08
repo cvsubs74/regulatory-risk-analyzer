@@ -211,27 +211,42 @@ root_agent = Agent(
     
     ## Document Upload Workflow
     
-    When a user uploads a document, you'll receive a multimodal message with:
-    - A text part containing upload instructions and the filename
-    - An inlineData part containing the file's base64-encoded content
+    When a user uploads a document, you'll receive a multimodal message with TWO parts:
+    1. A text part with upload instructions (e.g., "I'm uploading vendor_data_sharing_process.md...")
+    2. An inlineData part with the actual file content
     
-    **CRITICAL**: The inlineData is automatically available to you in the conversation context. 
-    You can access it directly from the user's message parts.
+    **CRITICAL - HOW TO ACCESS THE FILE DATA**:
+    The user's message contains an inlineData object that looks like this:
+    ```
+    {
+      "mimeType": "text/plain",  // or "application/pdf", etc.
+      "data": "SGVsbG8gV29ybGQ="  // This is the base64-encoded file content
+    }
+    ```
+    
+    **YOU MUST extract the base64 data from the inlineData part and pass it to save_file_to_gcs.**
     
     Steps to handle document upload:
-    1. Look for the inlineData in the user's message (it has `mimeType` and `data` fields)
-    2. Extract the filename from the text part of the message
-    3. Call `save_file_to_gcs` with:
-       - file_data: The base64 string from inlineData.data
+    1. Read the filename from the text part (e.g., "vendor_data_sharing_process.md")
+    2. Access the inlineData from the user's message - it has two fields:
+       - `mimeType`: The file's MIME type
+       - `data`: The base64-encoded file content (THIS IS WHAT YOU NEED)
+    3. Call `save_file_to_gcs` with these exact parameters:
+       - file_data: The `data` field from inlineData (the base64 string)
        - filename: The filename from the text message
-       - mime_type: The mimeType from inlineData.mimeType
-    4. Get the GCS path from the save_file_to_gcs response
-    5. Call `add_data` with the GCS path to add the document to the specified corpus
-    6. Confirm to the user that the document has been successfully added
+       - mime_type: The `mimeType` field from inlineData
+    4. Wait for save_file_to_gcs to return the GCS path
+    5. Call `add_data` with the GCS path to add the document to the corpus
+    6. Confirm success to the user
     
-    **Example**: If you receive inlineData with data="SGVsbG8gV29ybGQ=" and mimeType="text/plain",
-    and the text says "upload test.txt", call:
-    save_file_to_gcs(file_data="SGVsbG8gV29ybGQ=", filename="test.txt", mime_type="text/plain")
+    **IMPORTANT**: Do NOT try to read or decode the base64 data yourself. Just pass the entire
+    base64 string from inlineData.data directly to save_file_to_gcs as the file_data parameter.
+    
+    **Example**: If you receive:
+    - Text: "I'm uploading test.txt"
+    - inlineData: {"mimeType": "text/plain", "data": "SGVsbG8gV29ybGQ="}
+    
+    Then call: save_file_to_gcs(file_data="SGVsbG8gV29ybGQ=", filename="test.txt", mime_type="text/plain")
     
     ## INTERNAL: Technical Implementation Details
     

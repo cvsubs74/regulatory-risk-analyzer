@@ -161,20 +161,20 @@ function Chat({ corpusFilter = null }) {
     if (!selectedFile) return;
 
     try {
-      setUploadProgress('Uploading...');
+      setUploadProgress('Starting upload...');
       setError(null);
 
       const result = await riskAssessmentAPI.uploadDocument(selectedFile, 'data_v1');
 
-      // Add success message to chat
-      const successMessage = {
+      // Add immediate feedback message to chat
+      const uploadMessage = {
         role: 'assistant',
-        content: `✅ Successfully uploaded **${selectedFile.name}** to the knowledge base!\n\n${result.message}\n\nYou can now ask questions about this document.`,
+        content: result.message || `✅ Upload started for **${selectedFile.name}**!\n\nThe document is being processed in the background. You'll receive a notification when it's ready.`,
         timestamp: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, successMessage]);
+      setMessages(prev => [...prev, uploadMessage]);
 
-      // Clear upload state
+      // Clear upload state immediately (async processing continues in background)
       setSelectedFile(null);
       setUploadProgress(null);
       if (fileInputRef.current) {

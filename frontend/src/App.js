@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { 
   SparklesIcon,
@@ -9,9 +9,13 @@ import {
 } from '@heroicons/react/24/outline';
 import Chat from './pages/Chat';
 import CorpusExplorer from './pages/CorpusExplorer';
+import { NotificationProvider, useNotifications } from './contexts/NotificationContext';
+import NotificationBell from './components/NotificationBell';
 
-function App() {
+// Inner component that uses notifications
+function AppContent() {
   const [activeTab, setActiveTab] = useState('chat');
+  const { addNotification } = useNotifications();
 
   const tabs = [
     { id: 'chat', name: 'AI Assistant', icon: ChatBubbleLeftRightIcon, path: '/chat' },
@@ -19,6 +23,30 @@ function App() {
     { id: 'regulations', name: 'Regulations', icon: ScaleIcon, path: '/corpus/regulations' },
     { id: 'ontology', name: 'Ontology', icon: CubeIcon, path: '/corpus/ontology' },
   ];
+
+  // Listen for upload completion events
+  useEffect(() => {
+    const handleUploadComplete = (event) => {
+      const { filename, corpus, success, error } = event.detail;
+      
+      if (success) {
+        addNotification({
+          type: 'success',
+          title: 'Upload Complete',
+          message: `${filename} has been successfully added to ${corpus}`
+        });
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Upload Failed',
+          message: `Failed to upload ${filename}: ${error || 'Unknown error'}`
+        });
+      }
+    };
+
+    window.addEventListener('uploadComplete', handleUploadComplete);
+    return () => window.removeEventListener('uploadComplete', handleUploadComplete);
+  }, [addNotification]);
 
   return (
     <Router>
@@ -40,6 +68,7 @@ function App() {
                   </p>
                 </div>
               </div>
+              <NotificationBell />
             </div>
           </div>
         </header>
@@ -91,6 +120,15 @@ function App() {
         </footer>
       </div>
     </Router>
+  );
+}
+
+// Main App component with NotificationProvider
+function App() {
+  return (
+    <NotificationProvider>
+      <AppContent />
+    </NotificationProvider>
   );
 }
 

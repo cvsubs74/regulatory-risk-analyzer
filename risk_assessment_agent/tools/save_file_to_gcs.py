@@ -43,6 +43,10 @@ def save_file_to_gcs(
             "size_bytes": 12345
         }
     """
+    print(f"[SAVE_FILE] Tool called with filename={filename}, mime_type={mime_type}")
+    print(f"[SAVE_FILE] file_data length: {len(file_data) if file_data else 0} characters")
+    print(f"[SAVE_FILE] file_data type: {type(file_data)}")
+    
     try:
         # Decode base64 file data
         try:

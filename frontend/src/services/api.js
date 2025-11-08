@@ -220,57 +220,77 @@ const riskAssessmentAPI = {
         await this.createSession();
       }
       
-      // Send document with multimodal message using /run endpoint (like hurricane agent)
-      const response = await apiClient.post(
-        '/run',
-        {
-          app_name: 'risk_assessment_agent',
-          user_id: 'user',
-          session_id: currentSessionId,
-          new_message: {
-            parts: [
-              { 
-                text: `I'm uploading a document "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Please:
+      // Send document with multimodal message using /run endpoint
+      // Process upload in background and notify when complete
+      
+      // Return immediately to UI with pending status
+      const uploadResult = {
+        success: true,
+        message: `✅ Upload started for ${file.name}! Processing in background...`,
+        filename: file.name,
+        async: true,
+        pending: true
+      };
+      
+      // Start the upload in the background (don't await in this function)
+      // Use setTimeout to ensure the promise isn't garbage collected
+      setTimeout(async () => {
+        try {
+          console.log('[API] Starting background upload for:', file.name);
+          
+          const response = await apiClient.post(
+            '/run',
+            {
+              app_name: 'risk_assessment_agent',
+              user_id: 'user',
+              session_id: currentSessionId,
+              new_message: {
+                parts: [
+                  { 
+                    text: `I'm uploading a document "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Please:
 1. Use the save_file_to_gcs tool to save this file to Cloud Storage at gs://graph-rag-bucket/data/${file.name}
 2. Use the add_data tool to add it to the ${corpusName} corpus
 3. Confirm when the document has been successfully added to the knowledge base.` 
+                  },
+                  {
+                    inlineData: {
+                      mimeType: mimeType,
+                      data: fileBase64
+                    }
+                  }
+                ]
               },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: fileBase64
-                }
-              }
-            ]
-          },
-          streaming: false
-        },
-        { timeout: 300000 } // 5 minutes for large files
-      );
-      
-      console.log('[API] Upload response:', response.data);
-      
-      // Parse response - /run endpoint returns array of events
-      let content = '';
-      
-      if (response.data && Array.isArray(response.data)) {
-        for (const event of response.data) {
-          if (event.content?.parts) {
-            for (const part of event.content.parts) {
-              if (part.text) {
-                content += part.text;
-              }
+              streaming: true
+            },
+            { timeout: 300000 } // 5 minutes for large files
+          );
+          
+          console.log('[API] Upload completed:', response.data);
+          
+          // Dispatch custom event for notification
+          window.dispatchEvent(new CustomEvent('uploadComplete', {
+            detail: {
+              filename: file.name,
+              corpus: corpusName,
+              success: true
             }
-          }
+          }));
+        } catch (error) {
+          console.error('[API] Upload failed:', error);
+          
+          // Dispatch custom event for error notification
+          window.dispatchEvent(new CustomEvent('uploadComplete', {
+            detail: {
+              filename: file.name,
+              corpus: corpusName,
+              success: false,
+              error: error.message
+            }
+          }));
         }
-      }
+      }, 0);
       
-      return {
-        status: 'success',
-        message: content || `Successfully uploaded ${file.name} to ${corpusName}`,
-        filename: file.name,
-        corpus_name: corpusName
-      };
+      return uploadResult;
     } catch (error) {
       console.error('[API] Error uploading document:', error);
       throw error;
