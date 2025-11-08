@@ -50,20 +50,36 @@ adk deploy cloud_run \
     --region="$REGION" \
     --service_name="$SERVICE_NAME" \
     --allow_origins="*" \
+    --with_ui \
+    --log_level debug \
     "$AGENT_PATH"
+
+# Capture the URL of the deployed service
+SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --platform managed --region "$REGION" --format 'value(status.url)' 2>&1)
+echo ""
+echo "✅ Successfully deployed to: $SERVICE_URL"
+
+# Set IAM policy to allow public access (to fix CORS)
+echo ""
+echo "🔐 Setting IAM policy for $SERVICE_NAME to allow public access..."
+gcloud run services add-iam-policy-binding "$SERVICE_NAME" \
+    --member="allUsers" \
+    --role="roles/run.invoker" \
+    --region="$REGION" \
+    --platform=managed
+echo "✅ IAM policy updated for $SERVICE_NAME"
 
 echo ""
 echo "========================================="
 echo "✅ Backend deployment completed!"
 echo "========================================="
-echo "Backend API URL will be displayed above."
+echo "Backend API URL: $SERVICE_URL"
 echo "Environment variables loaded from $AGENT_PATH/.env"
 echo ""
 echo "To test the backend:"
-echo "  curl https://$SERVICE_NAME-[hash].a.run.app/health"
+echo "  curl $SERVICE_URL/health"
 echo ""
 echo "Next steps:"
-echo "  1. Note the backend URL from the deployment output"
-echo "  2. Update frontend/.env with REACT_APP_API_URL"
-echo "  3. Deploy frontend with: cd frontend && npm run deploy"
+echo "  1. Update frontend/.env.production with REACT_APP_API_URL=$SERVICE_URL"
+echo "  2. Deploy frontend with: cd frontend && npm run build && firebase deploy --only hosting"
 echo "========================================="

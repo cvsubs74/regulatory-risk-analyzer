@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   DocumentTextIcon,
   ChatBubbleLeftIcon,
-  SparklesIcon,
   ArrowPathIcon,
+  DocumentArrowUpIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import riskAssessmentAPI from '../services/api';
@@ -58,7 +59,10 @@ function CorpusExplorer({ corpusName }) {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [currentSuggestions, setCurrentSuggestions] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const corpusInfo = CORPUS_INFO[corpusName] || CORPUS_INFO.data_v1;
   const Icon = corpusInfo.icon;
@@ -144,6 +148,55 @@ function CorpusExplorer({ corpusName }) {
     } catch (err) {
       console.error('Error generating suggestions:', err);
       // Keep existing suggestions on error
+    }
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setUploadProgress('Uploading...');
+
+      const result = await riskAssessmentAPI.uploadDocument(selectedFile, corpusName);
+
+      // Add success message to chat
+      const successMessage = {
+        role: 'assistant',
+        content: `✅ Successfully uploaded **${selectedFile.name}** to ${corpusInfo.title}!\n\n${result.message}\n\nYou can now ask questions about this document.`,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, successMessage]);
+
+      // Clear upload state
+      setSelectedFile(null);
+      setUploadProgress(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      const errorMessage = {
+        role: 'assistant',
+        content: `❌ Failed to upload document: ${error.response?.data?.message || error.message}`,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+      setUploadProgress(null);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    setSelectedFile(null);
+    setUploadProgress(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -287,7 +340,57 @@ function CorpusExplorer({ corpusName }) {
 
               {/* Chat Input */}
               <div className="border-t border-gray-200 p-4 flex-shrink-0">
+                {/* File Upload Section */}
+                {selectedFile && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <DocumentArrowUpIcon className="h-5 w-5 text-blue-600" />
+                        <span className="text-sm font-medium text-gray-900">{selectedFile.name}</span>
+                        <span className="text-xs text-gray-500">
+                          ({(selectedFile.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {uploadProgress ? (
+                          <span className="text-sm text-blue-600">{uploadProgress}</span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={handleFileUpload}
+                              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            >
+                              Upload
+                            </button>
+                            <button
+                              onClick={handleCancelUpload}
+                              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                              <XMarkIcon className="h-5 w-5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex space-x-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    accept=".pdf,.txt,.doc,.docx,.md"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={chatLoading || uploadProgress}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    title="Upload document to knowledge base"
+                  >
+                    <DocumentArrowUpIcon className="h-5 w-5" />
+                  </button>
                   <input
                     type="text"
                     value={chatInput}

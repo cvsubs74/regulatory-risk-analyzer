@@ -50,7 +50,7 @@ const riskAssessmentAPI = {
 
       console.log('[API] Sending message to session:', currentSessionId);
 
-      // Send message to existing session using /run endpoint
+      // Send message using /run endpoint (enabled with --with_ui --a2a flags)
       const response = await apiClient.post(
         '/run',
         {
@@ -60,12 +60,13 @@ const riskAssessmentAPI = {
           new_message: {
             parts: [{ text: message }]
           },
+          streaming: false
         }
       );
 
       console.log('[API] Response received:', response.data);
 
-      // Parse response - ADK returns events array
+      // Parse response - /run endpoint returns array of events
       let responseText = '';
       
       if (response.data && Array.isArray(response.data)) {
@@ -168,6 +169,112 @@ const riskAssessmentAPI = {
       fullQuery = `Analyze the following for compliance with ${regulations.join(', ')}: ${query}`;
     }
     return this.sendMessage(fullQuery);
+  },
+
+  /**
+   * Upload a document to Cloud Storage and add it to a corpus
+   * @param {File} file - The file to upload
+   * @param {string} corpusName - Name of the corpus to add the document to (default: data_v1)
+   * @returns {Promise} - Upload response
+   */
+  async uploadDocument(file, corpusName = 'data_v1') {
+    try {
+      console.log('[API] Uploading document:', file.name);
+      
+      // Convert file to base64
+      const fileBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          // Extract base64 data (remove data:...;base64, prefix if present)
+          const result = reader.result;
+          const base64 = result.includes(',') ? result.split(',')[1] : result;
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      
+      // Determine MIME type - use supported types for Gemini
+      // Gemini supports: text/plain, application/pdf, and specific document types
+      let mimeType = file.type;
+      
+      // If no type or unsupported type, detect from file extension
+      if (!mimeType || mimeType === 'application/octet-stream') {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const mimeTypeMap = {
+          'txt': 'text/plain',
+          'md': 'text/plain',
+          'pdf': 'application/pdf',
+          'doc': 'application/msword',
+          'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'csv': 'text/csv',
+          'json': 'application/json',
+          'xml': 'text/xml',
+          'html': 'text/html'
+        };
+        mimeType = mimeTypeMap[ext] || 'text/plain'; // Default to text/plain
+      }
+      
+      // Create session if we don't have one
+      if (!currentSessionId) {
+        await this.createSession();
+      }
+      
+      // Send document with multimodal message using /run endpoint (like hurricane agent)
+      const response = await apiClient.post(
+        '/run',
+        {
+          app_name: 'risk_assessment_agent',
+          user_id: 'user',
+          session_id: currentSessionId,
+          new_message: {
+            parts: [
+              { 
+                text: `I'm uploading a document "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Please:
+1. Use the save_file_to_gcs tool to save this file to Cloud Storage at gs://graph-rag-bucket/data/${file.name}
+2. Use the add_data tool to add it to the ${corpusName} corpus
+3. Confirm when the document has been successfully added to the knowledge base.` 
+              },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: fileBase64
+                }
+              }
+            ]
+          },
+          streaming: false
+        },
+        { timeout: 300000 } // 5 minutes for large files
+      );
+      
+      console.log('[API] Upload response:', response.data);
+      
+      // Parse response - /run endpoint returns array of events
+      let content = '';
+      
+      if (response.data && Array.isArray(response.data)) {
+        for (const event of response.data) {
+          if (event.content?.parts) {
+            for (const part of event.content.parts) {
+              if (part.text) {
+                content += part.text;
+              }
+            }
+          }
+        }
+      }
+      
+      return {
+        status: 'success',
+        message: content || `Successfully uploaded ${file.name} to ${corpusName}`,
+        filename: file.name,
+        corpus_name: corpusName
+      };
+    } catch (error) {
+      console.error('[API] Error uploading document:', error);
+      throw error;
+    }
   },
 };
 

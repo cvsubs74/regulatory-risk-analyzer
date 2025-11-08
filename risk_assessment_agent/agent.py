@@ -8,6 +8,7 @@ from .tools.get_corpus_info import get_corpus_info
 from .tools.list_corpora import list_corpora
 from .tools.list_documents import list_documents
 from .tools.rag_query import rag_query
+from .tools.save_file_to_gcs import save_file_to_gcs
 from .tools.logging_utils import log_agent_entry, log_agent_exit
 
 root_agent = Agent(
@@ -24,6 +25,7 @@ root_agent = Agent(
         get_corpus_info,
         delete_corpus,
         delete_document,
+        save_file_to_gcs,
     ],
     instruction="""
     # 🛡️ Regulatory Risk Assessment Agent
@@ -165,7 +167,7 @@ root_agent = Agent(
     
     ## Using Tools
     
-    You have seven specialized tools at your disposal:
+    You have eight specialized tools at your disposal:
     
     1. `rag_query`: Query a corpus to answer questions
        - Parameters:
@@ -179,25 +181,57 @@ root_agent = Agent(
        - Parameters:
          - corpus_name: The name for the new corpus
     
-    4. `add_data`: Add new data to a corpus
+    4. `save_file_to_gcs`: Save an uploaded file to Cloud Storage
+       - Parameters:
+         - file_data: Base64-encoded file content (from inlineData in user message)
+         - filename: Name of the file
+         - mime_type: MIME type of the file
+       - **When to use**: When a user uploads a document, the file comes as inlineData in the message parts. Extract the base64 data and use this tool to save it to Cloud Storage first.
+    
+    5. `add_data`: Add new data to a corpus
        - Parameters:
          - corpus_name: The name of the corpus to add data to (required, but can be empty to use current corpus)
-         - paths: List of Google Drive or GCS URLs
+         - paths: List of Google Drive or GCS URLs (e.g., ["gs://graph-rag-bucket/data/document.pdf"])
+       - **For Document Uploads**: After using save_file_to_gcs, use this tool to add the GCS path to the corpus.
     
-    5. `get_corpus_info`: Get detailed information about a specific corpus
+    6. `get_corpus_info`: Get detailed information about a specific corpus
        - Parameters:
          - corpus_name: The name of the corpus to get information about
          
-    6. `delete_document`: Delete a specific document from a corpus
+    7. `delete_document`: Delete a specific document from a corpus
        - Parameters:
          - corpus_name: The name of the corpus containing the document
          - document_id: The ID of the document to delete (can be obtained from get_corpus_info results)
          - confirm: Boolean flag that must be set to True to confirm deletion
          
-    7. `delete_corpus`: Delete an entire corpus and all its associated files
+    8. `delete_corpus`: Delete an entire corpus and all its associated files
        - Parameters:
          - corpus_name: The name of the corpus to delete
          - confirm: Boolean flag that must be set to True to confirm deletion
+    
+    ## Document Upload Workflow
+    
+    When a user uploads a document, you'll receive a multimodal message with:
+    - A text part containing upload instructions and the filename
+    - An inlineData part containing the file's base64-encoded content
+    
+    **CRITICAL**: The inlineData is automatically available to you in the conversation context. 
+    You can access it directly from the user's message parts.
+    
+    Steps to handle document upload:
+    1. Look for the inlineData in the user's message (it has `mimeType` and `data` fields)
+    2. Extract the filename from the text part of the message
+    3. Call `save_file_to_gcs` with:
+       - file_data: The base64 string from inlineData.data
+       - filename: The filename from the text message
+       - mime_type: The mimeType from inlineData.mimeType
+    4. Get the GCS path from the save_file_to_gcs response
+    5. Call `add_data` with the GCS path to add the document to the specified corpus
+    6. Confirm to the user that the document has been successfully added
+    
+    **Example**: If you receive inlineData with data="SGVsbG8gV29ybGQ=" and mimeType="text/plain",
+    and the text says "upload test.txt", call:
+    save_file_to_gcs(file_data="SGVsbG8gV29ybGQ=", filename="test.txt", mime_type="text/plain")
     
     ## INTERNAL: Technical Implementation Details
     
