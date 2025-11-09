@@ -141,60 +141,68 @@ root_agent = LlmAgent(
     Step 3: Present the data graph
     ```
     
-    ## SCENARIO 3: Risk Analysis (Regulation in Corpus)
-    **User asks:** "Analyze our CCPA compliance risks" (and CCPA IS in regulations corpus)
+    ## SCENARIO 3: Risk Analysis
+    **User asks:** "Analyze our CCPA compliance risks" OR "Analyze GDPR compliance"
     
     **Route to:** document_query_agent → risk_analysis_agent
-    **Workflow:**
-    1. Call document_query_agent to get:
-       - CCPA regulation text from regulations corpus
-       - Business processes from data_v1 corpus
-       - Data graph (if needed)
-    2. Call risk_analysis_agent with:
-       - Regulation requirements (from regulations corpus)
-       - Business processes (from data_v1 corpus)
-    3. Present risk analysis with specific citations
     
-    **Example:**
+    **CRITICAL WORKFLOW - MUST FOLLOW EXACTLY:**
+    
+    **Step 1:** Call document_query_agent to retrieve:
     ```
-    User: "Analyze our CCPA compliance risks"
-    
-    Step 1: Call document_query_agent
-    "Query regulations corpus for: CCPA requirements, all sections and provisions
-     Query data_v1 corpus for: all processing activities, data sharing, consent mechanisms"
-    
-    Step 2: Call risk_analysis_agent
-    "Using the CCPA regulation text and business processes, analyze:
-     - Which CCPA requirements apply to which processes
-     - Where there are compliance gaps
-     - Risk levels for each gap
-     - Specific recommendations citing CCPA sections"
-    
-    Step 3: Present risk analysis
+    Query: "Search regulations corpus for [REGULATION_NAME] regulatory requirements.
+           Search data_v1 corpus for all processing activities, data flows, and business processes."
     ```
     
-    ## SCENARIO 4: Risk Analysis (Regulation NOT in Corpus)
-    **User asks:** "Analyze our GDPR compliance risks" (but GDPR is NOT in regulations corpus)
+    **Step 2:** Examine what document_query_agent returned:
+    - Did it find the regulation text in regulations corpus? 
+    - Did it find business processes in data_v1 corpus?
     
-    **Route to:** document_query_agent → risk_analysis_agent
-    **Workflow:**
-    1. Call document_query_agent to check regulations corpus
-    2. If regulation not found, risk_analysis_agent will respond:
-       "❌ I cannot perform GDPR analysis because GDPR is not in the regulations corpus.
-        Available regulations: [list what IS there]"
-    3. Present this response to user
-    4. Offer to analyze available regulations instead
+    **Step 3:** Call risk_analysis_agent with BOTH:
+    ```
+    "Here is the [REGULATION_NAME] regulation text from the regulations corpus:
+    [paste the actual regulation content from document_query_agent]
     
-    **Example:**
+    Here are the business processes from data_v1 corpus:
+    [paste the actual business process content from document_query_agent]
+    
+    Analyze compliance risks by comparing the business processes against the regulatory requirements."
+    ```
+    
+    **Step 4:** The risk_analysis_agent will either:
+    - **If regulation content was provided:** Perform detailed risk analysis
+    - **If no regulation content:** Respond that it cannot analyze without the regulation
+    
+    **IMPORTANT:** You MUST pass the actual regulation text content to risk_analysis_agent.
+    Don't just tell it to "analyze GDPR" - give it the GDPR text from the corpus.
+    
+    **Example - Regulation EXISTS:**
+    ```
+    User: "Analyze CCPA compliance"
+    
+    Step 1: document_query_agent returns:
+    - CCPA regulation: [full text of CCPA from regulations corpus]
+    - Business processes: [processing activities from data_v1]
+    
+    Step 2: Call risk_analysis_agent:
+    "Using this CCPA regulation text: [paste CCPA content]
+     And these business processes: [paste process content]
+     Analyze compliance risks..."
+    
+    Step 3: risk_analysis_agent performs analysis and returns findings
+    ```
+    
+    **Example - Regulation MISSING:**
     ```
     User: "Analyze GDPR compliance"
     
-    Step 1: Call document_query_agent
-    "Check regulations corpus for GDPR"
+    Step 1: document_query_agent returns:
+    - GDPR regulation: NOT FOUND in regulations corpus
+    - Business processes: [processing activities from data_v1]
     
-    Step 2: If not found, respond:
-    "I cannot perform a GDPR compliance risk analysis because the GDPR regulatory requirements 
-    are not available in my regulations corpus.
+    Step 2: Since GDPR not found, respond to user:
+    "❌ I cannot perform a GDPR compliance risk analysis because the GDPR regulatory 
+    requirements are not available in my regulations corpus.
     
     To perform this analysis, the GDPR regulation text must first be uploaded to the 
     regulations corpus.
@@ -202,9 +210,11 @@ root_agent = LlmAgent(
     Currently available regulations: CCPA
     
     Would you like me to analyze CCPA compliance instead?"
+    
+    DO NOT call risk_analysis_agent if the regulation text was not found.
     ```
     
-    ## SCENARIO 5: Comprehensive Analysis (Data Graph + Risk Analysis)
+    ## SCENARIO 4: Comprehensive Analysis (Data Graph + Risk Analysis)
     **User asks:** "Build a data graph and analyze CCPA compliance risks"
     
     **Route to:** document_query_agent → data_graph_builder_agent → risk_analysis_agent
@@ -238,7 +248,7 @@ root_agent = LlmAgent(
     - CCPA risk analysis with findings and recommendations
     ```
     
-    ## SCENARIO 6: Document Upload
+    ## SCENARIO 5: Document Upload
     **User:** Uploads a file with inlineData
     
     **Route to:** document_management_agent
@@ -247,7 +257,7 @@ root_agent = LlmAgent(
     2. Agent saves file and adds to appropriate corpus
     3. Confirm to user
     
-    ## SCENARIO 7: Corpus Management
+    ## SCENARIO 6: Corpus Management
     **User asks:** "What corpora do I have?" OR "Create a corpus for policies"
     
     **Route to:** corpus_management_agent

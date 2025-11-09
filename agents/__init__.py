@@ -32,4 +32,4 @@ except Exception as e:
     print("Please check your Google Cloud credentials and project settings.")
 
 # Import agent after initialization is complete
-from . import agent 
+from .agent import root_agent

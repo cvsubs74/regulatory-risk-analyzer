@@ -6,7 +6,7 @@ const DEFAULT_CORPUS = process.env.REACT_APP_DEFAULT_CORPUS || 'data_v1';
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 120000, // 2 minutes for complex queries
+  timeout: 300000, // 5 minutes for complex queries
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,7 +24,7 @@ const riskAssessmentAPI = {
     try {
       console.log('[API] Creating new session...');
       const response = await apiClient.post(
-        '/apps/risk_assessment_agent/users/user/sessions',
+        '/apps/agents/users/user/sessions',
         {}
       );
       currentSessionId = response.data.id;
@@ -50,11 +50,11 @@ const riskAssessmentAPI = {
 
       console.log('[API] Sending message to session:', currentSessionId);
 
-      // Send message using /run endpoint (enabled with --with_ui --a2a flags)
+      // Send message using /run endpoint (enabled with --with_ui flag)
       const response = await apiClient.post(
         '/run',
         {
-          app_name: 'risk_assessment_agent',
+          app_name: 'agents',
           user_id: 'user',
           session_id: currentSessionId,
           new_message: {
@@ -241,7 +241,7 @@ const riskAssessmentAPI = {
           const response = await apiClient.post(
             '/run',
             {
-              app_name: 'risk_assessment_agent',
+              app_name: 'agents',
               user_id: 'user',
               session_id: currentSessionId,
               new_message: {
