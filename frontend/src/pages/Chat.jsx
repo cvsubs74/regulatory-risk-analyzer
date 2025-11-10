@@ -8,31 +8,42 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import riskAssessmentAPI from '../services/api';
+import { useDemoMode } from '../contexts/DemoModeContext';
+import { getMockResponse } from '../services/mockData';
 
-// Initial sample queries for quick start
+// Initial sample queries for quick start - Business-focused questions only
 const INITIAL_QUERIES = [
-  'What business processes are documented?',
-  'What regulations are available?',
+  // Compliance analysis questions
   'Analyze CCPA compliance for our customer analytics process',
-  'What entity types are defined in the ontology?',
-  'Summarize the key points from available regulations',
-  'How do we handle cross-border data transfers?',
-  'What are the data retention requirements under CCPA?',
-  'Explain our vendor data processing agreements',
+  'What are the risks in our payment processing workflow?',
+  'Identify gaps between our data handling and regulatory requirements',
+  'What personal data are we collecting in our documented processes?',
+  
+  // Business process questions
+  'What business processes involve third-party data sharing?',
+  'Which vendors do we share customer data with?',
+  'Compare data retention requirements across all regulations',
+  'What are the most critical compliance risks in our operations?',
 ];
 
+// Store chat history for AI Assistant to persist across tab switches
+const aiAssistantChatHistory = { messages: [], suggestions: [] };
+
 function Chat({ corpusFilter = null }) {
+  const { isDemoMode } = useDemoMode();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [suggestions, setSuggestions] = useState(INITIAL_QUERIES);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true); // Start with loading state
   const [uploadProgress, setUploadProgress] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,6 +53,150 @@ function Chat({ corpusFilter = null }) {
     scrollToBottom();
   }, [messages]);
 
+  // Restore chat history on mount and generate initial suggestions
+  useEffect(() => {
+    if (isInitialMount.current) {
+      console.log('[Chat] Restoring AI Assistant chat history');
+      if (aiAssistantChatHistory.messages.length > 0) {
+        setMessages(aiAssistantChatHistory.messages);
+        console.log(`[Chat] Restored ${aiAssistantChatHistory.messages.length} messages`);
+      }
+      
+      // Generate fresh suggestions on mount if no cached suggestions or no chat history
+      if (aiAssistantChatHistory.suggestions.length > 0 && aiAssistantChatHistory.messages.length > 0) {
+        setSuggestions(aiAssistantChatHistory.suggestions);
+        console.log(`[Chat] Restored ${aiAssistantChatHistory.suggestions.length} suggestions`);
+      } else {
+        console.log('[Chat] Generating initial suggestions from agent...');
+        generateInitialSuggestions();
+      }
+      
+      isInitialMount.current = false;
+    }
+  }, []);
+
+  // Save chat history whenever messages change
+  useEffect(() => {
+    if (!isInitialMount.current && messages.length > 0) {
+      aiAssistantChatHistory.messages = messages;
+      console.log(`[Chat] Saved ${messages.length} messages`);
+    }
+  }, [messages]);
+
+  // Save suggestions whenever they change
+  useEffect(() => {
+    if (!isInitialMount.current && suggestions.length > 0) {
+      aiAssistantChatHistory.suggestions = suggestions;
+      console.log(`[Chat] Saved ${suggestions.length} suggestions`);
+    }
+  }, [suggestions]);
+
+  // Listen for tour events to automatically ask questions
+  useEffect(() => {
+    const handleTourQuestion = (event) => {
+      const { query } = event.detail;
+      if (query) {
+        // Simulate typing the question
+        setInput(query);
+        // Auto-submit after a short delay
+        setTimeout(() => {
+          handleSendMessage(query);
+        }, 1500);
+      }
+    };
+
+    window.addEventListener('tourAskQuestion', handleTourQuestion);
+    return () => window.removeEventListener('tourAskQuestion', handleTourQuestion);
+  }, [isDemoMode]);
+
+  // Listen for clear all chats event
+  useEffect(() => {
+    const handleClearAll = () => {
+      setMessages([]);
+      
+      // Clear stored history
+      aiAssistantChatHistory.messages = [];
+      aiAssistantChatHistory.suggestions = [];
+      console.log('[Chat] Cleared AI Assistant chat history');
+      
+      // Regenerate suggestions
+      generateInitialSuggestions();
+    };
+
+    window.addEventListener('clearAllChats', handleClearAll);
+    return () => window.removeEventListener('clearAllChats', handleClearAll);
+  }, []);
+
+  // Generate initial suggestions when first opening the AI Assistant
+  const generateInitialSuggestions = async () => {
+    try {
+      setLoadingSuggestions(true);
+      
+      const prompt = `Generate 8 relevant questions that users can ask about regulatory compliance and business processes.
+
+CRITICAL: You MUST return your response as JSON with the questions in the "suggested_questions" array:
+
+{
+  "result": "Brief summary of available capabilities",
+  "suggested_questions": [
+    "Question 1?",
+    "Question 2?",
+    "Question 3?",
+    "Question 4?",
+    "Question 5?",
+    "Question 6?",
+    "Question 7?",
+    "Question 8?"
+  ]
+}
+
+Focus on:
+- Compliance analysis (CCPA, GDPR, HIPAA)
+- Business process questions
+- Risk assessment
+- Data sharing and vendor relationships
+- Operational procedures
+
+IMPORTANT: Put ALL 8 questions in the "suggested_questions" array, not in the "result" field`;
+      
+      const response = await riskAssessmentAPI.sendMessage(prompt);
+      
+      // Try to use suggested_questions from structured output first
+      if (response.suggested_questions && response.suggested_questions.length > 0) {
+        const suggestions = response.suggested_questions.slice(0, 8);
+        setSuggestions(suggestions);
+        aiAssistantChatHistory.suggestions = suggestions;
+        console.log(`[Chat] Generated ${suggestions.length} initial suggestions from agent`);
+      } else if (response.content) {
+        // Fallback: Parse from text content
+        const suggestions = response.content
+          .split('\n')
+          .filter(line => line.trim() && !line.match(/^\d+[.)]/))
+          .map(line => line.replace(/^[-*]\s*/, '').trim())
+          .filter(line => line.length > 10)
+          .slice(0, 8);
+        
+        if (suggestions.length > 0) {
+          setSuggestions(suggestions);
+          aiAssistantChatHistory.suggestions = suggestions;
+          console.log(`[Chat] Generated ${suggestions.length} initial suggestions (fallback)`);
+        } else {
+          // Use hardcoded as last resort
+          setSuggestions(INITIAL_QUERIES);
+        }
+      } else {
+        // Use hardcoded as last resort
+        setSuggestions(INITIAL_QUERIES);
+      }
+    } catch (err) {
+      console.error('Error generating initial suggestions:', err);
+      // Fall back to hardcoded suggestions
+      setSuggestions(INITIAL_QUERIES);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
   const generateSuggestions = async (conversationHistory) => {
     try {
       setLoadingSuggestions(true);
@@ -50,20 +205,52 @@ function Chat({ corpusFilter = null }) {
       const recentMessages = conversationHistory.slice(-4);
       const context = recentMessages.map(m => `${m.role}: ${m.content}`).join('\n');
       
-      const prompt = `Based on this conversation context, suggest 4 relevant follow-up questions the user might want to ask. Return ONLY the questions, one per line, without numbering or bullets:\n\n${context}`;
+      const prompt = `Based on this conversation context, suggest 6 business-focused questions the user might want to ask next.
+
+CRITICAL: You MUST return your response as JSON with the questions in the "suggested_questions" array:
+
+{
+  "result": "Brief context summary",
+  "suggested_questions": [
+    "Question 1?",
+    "Question 2?",
+    "Question 3?",
+    "Question 4?",
+    "Question 5?",
+    "Question 6?"
+  ]
+}
+
+Mix:
+- 3 contextual follow-up questions related to the current conversation
+- 3 creative exploratory questions that start a completely new topic
+
+Focus on business processes, compliance, risks, data sharing, and operational questions.
+
+Conversation context:
+${context}
+
+IMPORTANT: Put ALL 6 questions in the "suggested_questions" array, not in the "result" field`;
       
       const response = await riskAssessmentAPI.sendMessage(prompt);
       
-      if (response.content) {
+      // Try to use suggested_questions from structured output first
+      if (response.suggested_questions && response.suggested_questions.length > 0) {
+        const suggestions = response.suggested_questions.slice(0, 6);
+        setSuggestions(suggestions);
+        console.log(`[Chat] Generated ${suggestions.length} follow-up suggestions from agent`);
+      } else if (response.content) {
+        // Fallback: Parse from text content
         const newSuggestions = response.content
           .split('\n')
-          .filter(line => line.trim() && !line.match(/^\d+[.)]/)) // Remove numbered lines
-          .map(line => line.replace(/^[-*]\s*/, '').trim()) // Remove bullet points
-          .filter(line => line.length > 10) // Filter out short lines
-          .slice(0, 4); // Take first 4
+          .filter(line => line.trim() && !line.match(/^\d+[.)]/))
+          .map(line => line.replace(/^[-*]\s*/, '').trim())
+          .filter(line => line.length > 10)
+          .slice(0, 6);
         
         if (newSuggestions.length > 0) {
           setSuggestions(newSuggestions);
+          console.log(`[Chat] Generated ${newSuggestions.length} follow-up suggestions (fallback)`);
         }
       }
     } catch (err) {
@@ -89,7 +276,20 @@ function Chat({ corpusFilter = null }) {
     setError(null);
 
     try {
-      const response = await riskAssessmentAPI.sendMessage(messageText);
+      let response;
+      
+      // Use mock data in demo mode
+      if (isDemoMode) {
+        const mockData = getMockResponse(messageText);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, mockData.duration || 2000));
+        response = {
+          content: mockData.response,
+          role: 'assistant'
+        };
+      } else {
+        response = await riskAssessmentAPI.sendMessage(messageText);
+      }
 
       console.log('[Chat] Agent response:', response);
 
@@ -196,7 +396,7 @@ function Chat({ corpusFilter = null }) {
   };
 
   return (
-    <div className="h-[calc(100vh-12rem)]">
+    <div className="h-[calc(100vh-12rem)]" data-tour-id="chat-interface">
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-200 p-4 bg-gradient-to-r from-purple-50 to-blue-50 flex-shrink-0">
@@ -289,7 +489,7 @@ function Chat({ corpusFilter = null }) {
                 >
                   {message.role === 'assistant' ? (
                     <div className="markdown-content prose prose-sm max-w-none break-words overflow-wrap-anywhere">
-                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap break-words">{message.content}</p>

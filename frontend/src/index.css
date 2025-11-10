@@ -41,23 +41,23 @@ code {
 }
 
 .markdown-content h1 {
-  @apply text-2xl font-bold mt-6 mb-4;
+  @apply text-2xl font-bold mt-6 mb-4 text-purple-700 border-b-2 border-purple-200 pb-2;
 }
 
 .markdown-content h2 {
-  @apply text-xl font-bold mt-5 mb-3;
+  @apply text-xl font-bold mt-5 mb-3 text-blue-700;
 }
 
 .markdown-content h3 {
-  @apply text-lg font-semibold mt-4 mb-2;
+  @apply text-lg font-semibold mt-4 mb-2 text-gray-700;
 }
 
 .markdown-content p {
-  @apply mb-3;
+  @apply mb-3 leading-relaxed;
 }
 
 .markdown-content ul, .markdown-content ol {
-  @apply ml-6 mb-3;
+  @apply ml-6 mb-3 space-y-1;
 }
 
 .markdown-content li {
@@ -65,21 +65,107 @@ code {
 }
 
 .markdown-content code {
-  @apply bg-gray-100 px-1 py-0.5 rounded text-sm font-mono;
+  @apply bg-purple-50 px-2 py-0.5 rounded text-sm font-mono text-purple-700 border border-purple-200;
 }
 
 .markdown-content pre {
-  @apply bg-gray-100 p-4 rounded-lg overflow-x-auto mb-3;
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4 shadow-md;
 }
 
 .markdown-content pre code {
-  @apply bg-transparent p-0;
+  @apply bg-transparent p-0 text-gray-100 border-0;
 }
 
 .markdown-content strong {
-  @apply font-semibold;
+  @apply font-semibold text-gray-900;
 }
 
 .markdown-content a {
-  @apply text-primary hover:underline;
+  @apply text-blue-600 hover:text-blue-800 hover:underline;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-blue-500 pl-4 italic text-gray-600 my-4;
+}
+
+.markdown-content hr {
+  @apply my-6 border-gray-300;
+}
+
+/* Enhanced table styling */
+.markdown-content table {
+  @apply w-full border-collapse mb-6 shadow-md rounded-lg overflow-hidden;
+}
+
+.markdown-content thead {
+  @apply bg-gradient-to-r from-purple-600 to-blue-600 text-white;
+}
+
+.markdown-content th {
+  @apply px-4 py-3 text-left font-semibold text-sm uppercase tracking-wide;
+}
+
+.markdown-content tbody tr {
+  @apply border-b border-gray-200 hover:bg-blue-50 transition-colors;
+}
+
+.markdown-content tbody tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.markdown-content td {
+  @apply px-4 py-3 text-sm;
+}
+
+.markdown-content tbody tr:last-child {
+  @apply border-b-0;
+}
+
+/* Relationship diagram styling */
+.markdown-content pre:has(code:contains("--USES_ASSET-->")) {
+  @apply bg-blue-50 text-blue-900 border-2 border-blue-300;
+}
+
+/* Tour animations */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.4s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
 }

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   SparklesIcon,
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
   ScaleIcon,
-  CubeIcon
+  CubeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import Chat from './pages/Chat';
 import CorpusExplorer from './pages/CorpusExplorer';
 import { NotificationProvider, useNotifications } from './contexts/NotificationContext';
+import { TourProvider } from './contexts/TourContext';
+import { DemoModeProvider, useDemoMode } from './contexts/DemoModeContext';
 import NotificationBell from './components/NotificationBell';
+import TourButton from './components/TourButton';
+import TourGuide from './components/TourGuide';
 
-// Inner component that uses notifications
+// Inner component that uses notifications and demo mode
 function AppContent() {
   const [activeTab, setActiveTab] = useState('chat');
   const { addNotification } = useNotifications();
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
 
   const tabs = [
     { id: 'chat', name: 'AI Assistant', icon: ChatBubbleLeftRightIcon, path: '/chat' },
@@ -50,6 +56,44 @@ function AppContent() {
 
   return (
     <Router>
+      <RouterContent 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        tabs={tabs} 
+        isDemoMode={isDemoMode} 
+        toggleDemoMode={toggleDemoMode} 
+      />
+    </Router>
+  );
+}
+
+// Component inside Router that can use useLocation
+function RouterContent({ activeTab, setActiveTab, tabs, isDemoMode, toggleDemoMode }) {
+  const location = useLocation();
+
+  // Auto-select tab based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/chat') {
+      setActiveTab('chat');
+    } else if (path === '/corpus/data_v1') {
+      setActiveTab('data');
+    } else if (path === '/corpus/regulations') {
+      setActiveTab('regulations');
+    } else if (path === '/corpus/ontology') {
+      setActiveTab('ontology');
+    }
+  }, [location.pathname, setActiveTab]);
+
+  // Clear all chat messages across all tabs
+  const handleClearAll = () => {
+    if (window.confirm('Clear all chat history from all tabs?')) {
+      // Dispatch event to clear all chats
+      window.dispatchEvent(new CustomEvent('clearAllChats'));
+    }
+  };
+
+  return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-slate-200">
@@ -68,7 +112,37 @@ function AppContent() {
                   </p>
                 </div>
               </div>
-              <NotificationBell />
+              <div className="flex items-center space-x-3">
+                {/* Clear All Button */}
+                <button
+                  onClick={handleClearAll}
+                  className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-medium text-sm transition-all border border-red-200"
+                  title="Clear all chat history"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  <span>Clear All</span>
+                </button>
+
+                {/* Demo Mode Toggle */}
+                <button
+                  onClick={toggleDemoMode}
+                  data-tour-id="demo-toggle"
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    isDemoMode
+                      ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-400'
+                      : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
+                  }`}
+                  title={isDemoMode ? 'Switch to Live Mode' : 'Switch to Demo Mode'}
+                >
+                  {isDemoMode ? '🎬 DEMO MODE' : '📡 LIVE MODE'}
+                </button>
+                
+                {/* Tour Button */}
+                <TourButton />
+                
+                {/* Notification Bell */}
+                <NotificationBell />
+              </div>
             </div>
           </div>
         </header>
@@ -118,16 +192,22 @@ function AppContent() {
             </p>
           </div>
         </footer>
+        
+        {/* Tour Guide */}
+        <TourGuide />
       </div>
-    </Router>
   );
 }
 
-// Main App component with NotificationProvider
+// Main App component with all providers
 function App() {
   return (
     <NotificationProvider>
-      <AppContent />
+      <DemoModeProvider>
+        <TourProvider>
+          <AppContent />
+        </TourProvider>
+      </DemoModeProvider>
     </NotificationProvider>
   );
 }

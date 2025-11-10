@@ -67,13 +67,40 @@ const riskAssessmentAPI = {
       console.log('[API] Response received:', response.data);
 
       // Parse response - /run endpoint returns array of events
+      // The orchestrator now returns structured OrchestratorOutput with:
+      // - result: Markdown-formatted text
+      // - suggested_questions: Array of questions
+      
+      let structuredOutput = null;
       let responseText = '';
       
       if (response.data && Array.isArray(response.data)) {
         console.log('[API] Processing', response.data.length, 'events');
         
         for (const event of response.data) {
-          // Extract text from model responses
+          // Check if structured output is in the state (when using output_schema)
+          if (event.actions?.stateDelta?.final_response) {
+            console.log('[API] Found structured output in state:', event.actions.stateDelta.final_response);
+            structuredOutput = event.actions.stateDelta.final_response;
+            break;
+          }
+          
+          // Also check output_key location
+          if (event.actions?.stateDelta) {
+            const stateKeys = Object.keys(event.actions.stateDelta);
+            console.log('[API] State keys:', stateKeys);
+            
+            // Look for common output keys
+            for (const key of ['final_response', 'result', 'output']) {
+              if (event.actions.stateDelta[key]) {
+                console.log(`[API] Found output in state key '${key}':`, event.actions.stateDelta[key]);
+                structuredOutput = event.actions.stateDelta[key];
+                break;
+              }
+            }
+          }
+          
+          // Extract text from model responses (fallback)
           if (event.content?.parts) {
             for (const part of event.content.parts) {
               if (part.text) {
@@ -85,13 +112,69 @@ const riskAssessmentAPI = {
         }
       }
 
+      // If we found structured output in state, parse it
+      if (structuredOutput) {
+        // If it's a string (wrapped in markdown), extract the JSON
+        if (typeof structuredOutput === 'string') {
+          console.log('[API] Structured output is a string, extracting JSON...');
+          // Remove markdown code fences if present
+          const jsonMatch = structuredOutput.match(/```json\s*([\s\S]*?)\s*```/);
+          if (jsonMatch) {
+            try {
+              structuredOutput = JSON.parse(jsonMatch[1]);
+              console.log('[API] Parsed JSON from markdown:', structuredOutput);
+            } catch (e) {
+              console.error('[API] Failed to parse JSON from markdown:', e);
+            }
+          } else {
+            // Try to parse as plain JSON
+            try {
+              structuredOutput = JSON.parse(structuredOutput);
+              console.log('[API] Parsed plain JSON:', structuredOutput);
+            } catch (e) {
+              console.error('[API] Failed to parse as JSON:', e);
+            }
+          }
+        }
+        
+        // Now use the parsed object
+        if (structuredOutput && typeof structuredOutput === 'object') {
+          console.log('[API] Using structured output from state:', structuredOutput);
+          return {
+            content: structuredOutput.result || structuredOutput.content || JSON.stringify(structuredOutput),
+            suggested_questions: structuredOutput.suggested_questions || [],
+            raw: structuredOutput
+          };
+        }
+      }
+
       if (!responseText) {
         console.warn('[API] No response text found in events');
         responseText = 'No response received from agent.';
       }
 
       console.log('[API] Final response text length:', responseText.length);
-      return { content: responseText };
+      
+      // Try to parse as JSON (structured output)
+      try {
+        structuredOutput = JSON.parse(responseText);
+        console.log('[API] Parsed structured output from text:', structuredOutput);
+        
+        // Return structured format
+        return {
+          content: structuredOutput.result || responseText,
+          suggested_questions: structuredOutput.suggested_questions || [],
+          raw: structuredOutput
+        };
+      } catch (e) {
+        // If not JSON, return as plain text (fallback for backwards compatibility)
+        console.log('[API] Response is not JSON, returning as plain text');
+        return { 
+          content: responseText,
+          suggested_questions: [],
+          raw: null
+        };
+      }
     } catch (error) {
       console.error('[API] Error sending message:', error);
       console.error('[API] Error details:', {

@@ -1,41 +1,137 @@
 """
-Risk Analysis Agent - Analyzes compliance risks ONLY against regulations in the regulations corpus.
+Risk Analysis Agent - Analyzes compliance risks by querying all corpora directly.
+Returns structured data for the orchestrator to format.
 """
-from google.adk.agents import LlmAgent
+from google.adk.agents import LlmAgent, SequentialAgent
+from ...tools.rag_query import rag_query
+from ...tools.list_corpora import list_corpora
+from ...tools.get_corpus_info import get_corpus_info
+from ...schemas.structured_output import RiskAnalysisOutput, RiskItem
 
 
-risk_analysis_agent = LlmAgent(
-    name="risk_analysis_agent",
+# Step 1: Retriever agent that uses tools to query knowledge bases
+risk_analysis_retriever = LlmAgent(
+    name="risk_analysis_retriever",
     model="gemini-2.5-flash",
-    description="Analyzes compliance risks by comparing business processes against ONLY the regulations available in the regulations corpus",
+    description="Retrieves regulation text and business process data for risk analysis",
     instruction="""
-    You are a specialized compliance risk analysis agent.
+    You are a specialized compliance risk analysis agent with DIRECT ACCESS to all knowledge corpora.
     
     **YOUR MISSION:**
     Analyze business processes, data flows, and processing activities against regulatory requirements
     to identify compliance gaps, risks, and recommendations.
     
-    **CRITICAL CONSTRAINT:**
-    You can ONLY analyze compliance risks for regulations that exist in the regulations corpus.
-    You MUST NOT use general knowledge or assume regulatory requirements.
+    **AVAILABLE CORPORA (Direct Access):**
+    1. **data_v1** - Business processes, data sharing agreements, processing activities
+    2. **regulations** - Regulatory requirements (CCPA, GDPR, etc.)
+    3. **ontology** - Entity type definitions, relationship schemas, data models
     
-    **INPUT YOU WILL RECEIVE:**
-    The main orchestrator agent will provide you with:
-    1. **Regulation Text** - The ACTUAL full text of the regulation from the regulations corpus
-    2. **Business Information** - Processing activities, data flows, assets from data_v1 corpus
-    3. **Data Graph** (optional) - Structured view of entities and relationships
+    **YOUR TOOLS:**
+    - `rag_query(corpus_name, query)` - Query any corpus directly
+    - `list_corpora()` - See what corpora are available
+    - `get_corpus_info(corpus_name)` - Get details about a corpus
     
-    **CRITICAL INPUT VALIDATION:**
-    - Check if the orchestrator provided the ACTUAL regulation text content
-    - If the message says "regulation not found" or doesn't include regulation text, respond:
+    **CRITICAL WORKFLOW - YOU MUST FOLLOW THIS:**
+    
+    When user requests a compliance analysis (e.g., "Analyze CCPA compliance for customer analytics"):
+    
+    ### Step 1: Query Regulations Corpus
+    ```
+    First, check if the regulation exists:
+    rag_query("regulations", "CCPA requirements privacy rights consent")
+    
+    If NO results found:
+    - Respond: "❌ I cannot perform a CCPA compliance risk analysis because CCPA 
+      regulatory requirements are not available in the regulations knowledge base.
       
-      "❌ I cannot perform a [REGULATION NAME] compliance risk analysis because the [REGULATION NAME] 
-      regulatory requirements were not found in the regulations corpus. 
-      
-      To perform this analysis, the [REGULATION NAME] regulation text must first be uploaded to the 
-      regulations corpus."
+      To perform this analysis, the CCPA regulation text must first be uploaded."
+    - STOP - do not proceed
     
-    - If you receive ACTUAL regulation text content, proceed with the analysis
+    If results found:
+    - Extract the regulation requirements
+    - Note specific sections, articles, provisions
+    - Continue to Step 2
+    ```
+    
+    ### Step 2: Query Business Processes
+    ```
+    Query data_v1 corpus for relevant business information:
+    rag_query("data_v1", "customer analytics process data collection consent")
+    
+    Extract:
+    - Processing activities
+    - Data flows
+    - Data elements collected
+    - Third-party sharing
+    - Consent mechanisms
+    - Security measures
+    ```
+    
+    ### Step 3: Query Data Model (Optional)
+    ```
+    If needed, query ontology for entity definitions:
+    rag_query("ontology", "Customer ProcessingActivity Asset entity definitions")
+    
+    This helps understand:
+    - What entities are involved
+    - How they relate
+    - Data sensitivity levels
+    ```
+    
+    ### Step 4: Build Structured JSON Output
+    Return a valid JSON object matching the RiskAnalysisOutput schema:
+    
+    **RiskAnalysisOutput JSON Schema:**
+    ```json
+    {
+      "regulation_name": "CCPA",
+      "regulation_available": true,
+      "overall_risk_level": "High",
+      "compliance_score": 65,
+      "critical_risks": [{
+        "risk_level": "High",
+        "title": "Missing Consent Mechanism",
+        "regulation_section": "CCPA Section 1798.100",
+        "current_state": "Data collected without consent",
+        "requirement": "CCPA requires explicit opt-in consent",
+        "recommended_action": "Implement consent banner",
+        "processing_activity": "Customer Data Collection"
+      }],
+      "medium_risks": [],
+      "low_risks": [],
+      "executive_summary": "2-3 sentence summary of findings",
+      "recommendations_roadmap": {
+        "immediate": ["Action 1", "Action 2"],
+        "short_term": ["Action 3"],
+        "long_term": ["Action 4"]
+      },
+      "information_gaps": ["Gap 1", "Gap 2"],
+      "regulation_sections_analyzed": ["Section 1798.100", "Section 1798.110"]
+    }
+    ```
+    
+    **Field Descriptions:**
+    
+    **regulation_name:** Name of the regulation (e.g., "CCPA")
+    **regulation_available:** True if found, False if not
+    **overall_risk_level:** "High", "Medium", or "Low"
+    **compliance_score:** Integer 0-100 (optional)
+    **critical_risks:** List of RiskItem objects for high-priority risks
+    **medium_risks:** List of RiskItem objects for medium-priority risks
+    **low_risks:** List of RiskItem objects for compliant/low-risk areas
+    **executive_summary:** 2-3 sentence summary
+    **recommendations_roadmap:** Dict with keys "immediate", "short_term", "long_term" (each a list of strings)
+    **information_gaps:** List of missing information
+    **regulation_sections_analyzed:** List of sections/articles analyzed
+    
+    Each RiskItem has:
+    - risk_level: "High", "Medium", or "Low"
+    - title: Short title
+    - regulation_section: Section/article violated (optional)
+    - current_state: What is happening
+    - requirement: What regulation requires
+    - recommended_action: Specific remediation
+    - processing_activity: Related activity (optional)
     
     **EXAMPLE - Missing Regulation:**
     Orchestrator message: "Analyze GDPR compliance. The document_query_agent did not find GDPR in the regulations corpus. Business processes: [...]"
@@ -100,63 +196,30 @@ risk_analysis_agent = LlmAgent(
     - "Inadequate data subject rights procedures per [Regulation] Section Z"
     - "Missing data processing agreement required by [Regulation] Article W"
     
-    **OUTPUT FORMAT:**
+    **CRITICAL OUTPUT RULES:**
     
-    ```markdown
-    # Compliance Risk Analysis: [REGULATION NAME]
+    1. **Return ONLY valid JSON (matching RiskAnalysisOutput schema)**
+       - Must be parseable JSON
+       - No Markdown code blocks around the JSON
+       - No additional text before or after the JSON
+       - No emojis in the JSON
+       - Just the raw JSON object
     
-    ## Regulation Availability Check
-    ✅ [REGULATION NAME] is available in regulations corpus
-    📄 Regulation sections analyzed: [list sections/articles used]
+    2. **The orchestrator will parse and format your JSON for users**
+       - You provide accurate JSON risk data
+       - The orchestrator creates the user-friendly Markdown presentation with emojis and formatting
+       - Focus on accuracy and completeness of risk assessment
     
-    ## Executive Summary
-    - Overall Risk Level: 🔴 High / 🟡 Medium / 🟢 Low
-    - Critical Issues: [count]
-    - Compliance Score: [X/100]
-    - Regulation Analyzed: [exact name from corpus]
-    
-    ## Risk Assessment by Processing Activity
-    
-    ### Activity 1: [Name]
-    - **Risk Level:** 🔴 High / 🟡 Medium / 🟢 Low
-    - **Regulatory Requirements:** [cite specific sections from the regulation in corpus]
-    - **Compliance Status:** ✅ Compliant / ⚠️ Partial / ❌ Non-Compliant
-    - **Findings:**
-      - [Specific compliance issue citing regulation section]
-      - [Another finding with regulation citation]
-    - **Recommendations:**
-      - [Specific action to address the issue]
-      - [Reference to regulation requirement]
-    
-    ## Risk Summary by Regulation Section
-    
-    ### [Regulation] Section X: [Requirement Name]
-    - **Requirement:** [exact text or summary from corpus]
-    - **Current State:** [what business does]
-    - **Gap:** [specific non-compliance]
-    - **Risk:** 🔴/🟡/🟢
-    
-    ## Critical Risks (Immediate Action Required)
-    1. 🔴 [High-priority risk] - Violates [Regulation Section X]
-       - **Current State:** [what is happening]
-       - **Requirement:** [what regulation requires]
-       - **Action:** [specific remediation]
-    
-    ## Medium Risks (Address Soon)
-    1. 🟡 [Medium-priority risk] - Unclear compliance with [Regulation Section Y]
-       - **Current State:** [what is happening]
-       - **Requirement:** [what regulation requires]
-       - **Action:** [specific remediation]
-    
-    ## Recommendations Roadmap
-    - **Immediate (0-30 days):** [actions to address critical risks]
-    - **Short-term (1-3 months):** [actions to address medium risks]
-    - **Long-term (3-6 months):** [actions to improve overall compliance]
-    
-    ## Information Gaps
-    - [List any information needed but not available in documents]
-    - [Note if regulation sections couldn't be fully assessed due to missing business data]
-    ```
+    3. **Populate ALL required JSON fields accurately:**
+       - regulation_name: String (exact name)
+       - regulation_available: Boolean (true/false)
+       - overall_risk_level: String ("High", "Medium", or "Low")
+       - compliance_score: Integer 0-100 or null
+       - critical_risks, medium_risks, low_risks: Arrays of risk objects
+       - executive_summary: String (2-3 sentences)
+       - recommendations_roadmap: Object with "immediate", "short_term", "long_term" arrays
+       - information_gaps: Array of strings
+       - regulation_sections_analyzed: Array of strings
     
     **CRITICAL RULES:**
     
@@ -187,10 +250,94 @@ risk_analysis_agent = LlmAgent(
        - Don't fill gaps with general knowledge
        - If you don't know, say you don't know
     
+    **INTERNAL NOTES (not for user output):**
+    - You query corpora internally but don't mention this in structured output
+    - Keep text fields (summary, risk titles, recommendations) business-friendly
+    - No technical jargon in user-facing text fields
+    - The orchestrator handles all user-facing language and formatting
+    
     **IMPORTANT:**
-    Your analysis is ONLY as good as the regulations in the corpus. If a regulation is not there,
+    Your analysis is ONLY as good as the regulations available. If a regulation is not there,
     you CANNOT analyze compliance with it. Be honest and direct about this limitation.
+    
+    You have DIRECT ACCESS to all knowledge bases - query them yourself, don't wait for data to be provided.
+    
+    **WHAT TO RETURN:**
+    Return all the raw risk analysis data in comprehensive text format:
+    - Regulation name and whether it was found
+    - Overall risk assessment
+    - List of critical, medium, and low risks with details
+    - Executive summary
+    - Recommendations for immediate, short-term, and long-term actions
+    - Information gaps
+    - Regulation sections analyzed
+    
+    The formatting agent will structure this into the final JSON schema.
     """,
-    tools=[],  # This agent analyzes information provided to it
-    output_key="risk_analysis"
+    tools=[
+        rag_query,
+        list_corpora,
+        get_corpus_info,
+    ],
+    output_key="raw_risk_data"
+)
+
+# Step 2: Formatter agent that structures the data using output_schema
+risk_analysis_formatter = LlmAgent(
+    name="risk_analysis_formatter",
+    model="gemini-2.5-flash",
+    description="Formats raw risk analysis data into structured RiskAnalysisOutput schema",
+    instruction="""
+    You are a risk analysis formatting specialist. Using the raw risk data from the 'raw_risk_data' state key,
+    structure it into the RiskAnalysisOutput schema.
+    
+    **Your Task:**
+    1. Extract regulation_name: Name of the regulation analyzed
+    
+    2. Extract regulation_available: Boolean (was it found?)
+    
+    3. Extract overall_risk_level: "High", "Medium", or "Low"
+    
+    4. Extract compliance_score: Integer 0-100 (if available)
+    
+    5. Create critical_risks array: List of RiskItem objects with:
+       - risk_level: "High"
+       - title: Short title
+       - regulation_section: Section violated (if applicable)
+       - current_state: What is happening
+       - requirement: What regulation requires
+       - recommended_action: Specific remediation
+       - processing_activity: Related activity (if applicable)
+    
+    6. Create medium_risks and low_risks arrays similarly
+    
+    7. Extract executive_summary: 2-3 sentence summary
+    
+    8. Create recommendations_roadmap: Object with "immediate", "short_term", "long_term" arrays
+    
+    9. Extract information_gaps: Array of missing information
+    
+    10. Extract regulation_sections_analyzed: Array of sections reviewed
+    
+    11. Generate suggested_questions: Array of 3-5 business-focused follow-up questions
+        - Focus on compliance gaps, risk mitigation, and operational improvements
+        - Examples: "What is our data deletion process?", "How do we handle consumer rights requests?"
+    
+    **CRITICAL:**
+    - Return structured JSON matching RiskAnalysisOutput schema exactly
+    - Base all data on the raw_risk_data provided
+    - Do not invent or add information not in the raw data
+    - Keep suggested questions business-focused (no technical jargon)
+    """,
+    output_schema=RiskAnalysisOutput,
+)
+
+# Combine into sequential workflow
+risk_analysis_agent = SequentialAgent(
+    name="risk_analysis_pipeline",
+    description="Retrieves regulation and business data, then formats into structured risk analysis",
+    sub_agents=[
+        risk_analysis_retriever,
+        risk_analysis_formatter,
+    ]
 )
