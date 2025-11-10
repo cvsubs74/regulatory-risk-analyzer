@@ -444,8 +444,14 @@ IMPORTANT: Put ALL 6 questions in the "suggested_questions" array, not in the "r
               </p>
               <div className="max-w-4xl mx-auto">
                 <p className="text-sm font-medium text-gray-700 mb-4">Try these questions:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {suggestions.map((query, index) => {
+                {loadingSuggestions && suggestions.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <ArrowPathIcon className="h-6 w-6 text-blue-500 animate-spin mr-3" />
+                    <span className="text-gray-600">Generating personalized questions...</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {suggestions.map((query, index) => {
                     // Color code based on index for variety
                     const colors = [
                       'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-400 text-blue-700',
@@ -469,7 +475,8 @@ IMPORTANT: Put ALL 6 questions in the "suggested_questions" array, not in the "r
                       </button>
                     );
                   })}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
