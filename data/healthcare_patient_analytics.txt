@@ -1,0 +1,509 @@
+BUSINESS PROCESS: Patient Health Analytics and Predictive Care Management
+==========================================================================
+
+Process Owner: Clinical Analytics Team
+Last Updated: November 2025
+Regulatory Framework: HIPAA, HITECH Act, GDPR (for EU patients), State Privacy Laws
+
+PROCESS OVERVIEW
+----------------
+This process describes how we collect, analyze, and use patient health data to 
+provide predictive analytics, care recommendations, and population health management 
+for our healthcare network. This includes integration of EHR data, claims data, 
+wearable device data, and social determinants of health.
+
+DATA ASSETS USED
+----------------
+
+1. ELECTRONIC HEALTH RECORD SYSTEM (EHR-MAIN)
+   Provider: Epic Systems
+   Location: On-premise data center (HIPAA-compliant)
+   Purpose: Store comprehensive patient medical records
+   Protected Health Information (PHI) Stored:
+   - Patient Demographics:
+     * Full Name, Date of Birth, Gender
+     * Social Security Number
+     * Address, Phone Number, Email
+     * Emergency Contact Information
+     * Race, Ethnicity (for health disparities research)
+     * Preferred Language
+     * Marital Status, Employment Status
+   
+   - Clinical Data:
+     * Medical History (diagnoses, conditions, allergies)
+     * Medication Lists (current and historical)
+     * Immunization Records
+     * Laboratory Results (blood tests, imaging, pathology)
+     * Vital Signs (blood pressure, heart rate, temperature, weight)
+     * Clinical Notes (physician observations, treatment plans)
+     * Surgical History
+     * Family Medical History
+     * Genetic Information (if available)
+   
+   - Treatment Data:
+     * Procedures Performed
+     * Prescriptions Written
+     * Referrals to Specialists
+     * Hospital Admissions and Discharges
+     * Emergency Department Visits
+   
+   Legal Basis: Treatment, Payment, Healthcare Operations (HIPAA)
+   Retention Period: Minimum 7 years, longer for minors (state-dependent)
+
+2. CLAIMS DATA WAREHOUSE (CLAIMS-DB)
+   Location: AWS HIPAA-compliant environment (us-east-1)
+   Purpose: Store insurance claims and billing data
+   PHI Processed:
+   - Patient ID (unique identifier)
+   - Member ID (insurance identifier)
+   - Date of Service
+   - Diagnosis Codes (ICD-10)
+   - Procedure Codes (CPT, HCPCS)
+   - Provider Information (NPI, specialty)
+   - Claim Amounts (billed, allowed, paid)
+   - Pharmacy Claims (medications, dosages, costs)
+   - Prior Authorization Records
+   
+   Legal Basis: Payment, Healthcare Operations (HIPAA)
+   Retention Period: 10 years (CMS requirement)
+
+3. PATIENT PORTAL DATABASE (PATIENT-PORTAL)
+   Provider: MyChart (Epic patient portal)
+   Location: On-premise data center
+   Purpose: Enable patient access to health records and communication
+   PHI Collected:
+   - Patient Login Activity (timestamps, IP addresses)
+   - Portal Messages (patient-provider communications)
+   - Appointment Requests and Scheduling
+   - Prescription Refill Requests
+   - Medical Record Downloads (audit trail)
+   - Patient-Reported Outcomes (surveys, symptom tracking)
+   - Proxy Access Records (family member access)
+   
+   Legal Basis: Treatment, Patient Access Rights (HIPAA)
+   Retention Period: Aligned with EHR retention
+
+4. REMOTE PATIENT MONITORING SYSTEM (RPM-PLATFORM)
+   Provider: Philips HealthSuite
+   Location: Cloud (HIPAA-compliant, US data centers)
+   Purpose: Collect data from home monitoring devices
+   PHI Collected:
+   - Patient ID
+   - Device Data:
+     * Blood Glucose Readings (for diabetic patients)
+     * Blood Pressure Readings (for hypertensive patients)
+     * Weight Measurements (for heart failure patients)
+     * Oxygen Saturation (SpO2) (for respiratory patients)
+     * Heart Rate and ECG Data (for cardiac patients)
+     * Activity Levels (step counts, exercise duration)
+     * Sleep Patterns (duration, quality)
+   - Device Compliance (usage frequency, adherence)
+   - Alert Thresholds and Triggered Alerts
+   
+   Legal Basis: Treatment (HIPAA)
+   Consent: Explicit patient consent for RPM program
+   Retention Period: Duration of monitoring + 7 years
+
+5. WEARABLE DEVICE DATA INTEGRATION (WEARABLE-API)
+   Provider: Apple HealthKit, Google Fit, Fitbit API
+   Location: Cloud (vendor-specific)
+   Purpose: Integrate patient-owned wearable device data
+   PHI Collected:
+   - Patient ID (linked to EHR)
+   - Health Metrics:
+     * Daily Step Count
+     * Heart Rate (resting, active, variability)
+     * Sleep Data (duration, stages)
+     * Exercise Sessions (type, duration, intensity)
+     * Calories Burned
+     * Menstrual Cycle Data (if tracked)
+     * Blood Oxygen Levels
+   - Device Type and Model
+   
+   Legal Basis: Patient Authorization (HIPAA), Consent
+   Opt-in: Patients explicitly authorize data sharing
+   Retention Period: Duration of authorization + 7 years
+
+6. PREDICTIVE ANALYTICS ENGINE (HEALTH-ML)
+   Location: Azure Machine Learning (HIPAA-compliant)
+   Purpose: Generate predictive models for clinical decision support
+   PHI Processed:
+   - De-identified Patient Cohorts (for model training)
+   - Identified Patient Data (for individual predictions):
+     * Patient ID
+     * All clinical data from EHR
+     * Claims history
+     * Social determinants of health
+     * Wearable device data
+   
+   Predictions Generated:
+   - Hospital Readmission Risk (30-day, 90-day)
+   - Disease Progression Likelihood
+   - Medication Adherence Probability
+   - Emergency Department Visit Risk
+   - Chronic Disease Development Risk
+   - Treatment Response Predictions
+   
+   Legal Basis: Healthcare Operations (HIPAA)
+   Automated Decision: Clinical decision support only (not sole basis for treatment)
+   Human Review: All predictions reviewed by clinicians
+
+7. SOCIAL DETERMINANTS OF HEALTH DATABASE (SDOH-DB)
+   Location: On-premise data center
+   Purpose: Store non-clinical factors affecting health outcomes
+   PHI Collected:
+   - Patient ID
+   - Social Factors:
+     * Housing Status (stable, unstable, homeless)
+     * Food Security (access to nutritious food)
+     * Transportation Access (ability to attend appointments)
+     * Social Support Network (family, community)
+     * Education Level
+     * Employment Status and Occupation
+     * Income Level (estimated or self-reported)
+     * Insurance Status and Type
+   - Environmental Factors:
+     * Neighborhood Safety
+     * Access to Healthcare Facilities
+     * Environmental Exposures
+   
+   Legal Basis: Treatment, Healthcare Operations (HIPAA)
+   Collection Method: Patient surveys, community health workers
+   Sensitivity: High - potential for discrimination if misused
+
+8. POPULATION HEALTH MANAGEMENT PLATFORM (PHM-SYSTEM)
+   Provider: Arcadia Analytics
+   Location: Cloud (HIPAA-compliant)
+   Purpose: Aggregate and analyze population-level health data
+   PHI Processed:
+   - All data from EHR-MAIN, CLAIMS-DB, RPM-PLATFORM
+   - Aggregated by:
+     * Geographic Region
+     * Diagnosis/Condition
+     * Risk Stratification Level
+     * Provider/Clinic
+   
+   Analytics:
+   - Care Gap Identification (overdue screenings, vaccinations)
+   - High-Risk Patient Identification
+   - Quality Measure Reporting (HEDIS, CMS Stars)
+   - Cost and Utilization Trends
+   - Outcome Tracking
+   
+   Legal Basis: Healthcare Operations (HIPAA)
+   Reporting: Aggregated data for quality improvement
+
+9. CLINICAL DECISION SUPPORT SYSTEM (CDS-ENGINE)
+   Integrated with: EHR-MAIN
+   Purpose: Provide real-time clinical recommendations
+   PHI Used:
+   - Current Patient Context (diagnosis, medications, allergies)
+   - Predictive Risk Scores from HEALTH-ML
+   - Evidence-Based Guidelines
+   - Drug Interaction Databases
+   
+   Alerts Generated:
+   - Drug-Drug Interactions
+   - Drug-Allergy Alerts
+   - Duplicate Therapy Warnings
+   - Preventive Care Reminders
+   - High-Risk Patient Flags
+   
+   Legal Basis: Treatment (HIPAA)
+   Override: Clinicians can override with documentation
+
+10. RESEARCH DATA REPOSITORY (RESEARCH-DB)
+    Location: Secure research environment (on-premise)
+    Purpose: Support clinical research and quality improvement
+    PHI Status: De-identified or Limited Data Set
+    Data Included:
+    - De-identified clinical data
+    - Dates of service (limited data set)
+    - Geographic information (ZIP code only)
+    - Ages (including over 89)
+    
+    Legal Basis: Research (IRB-approved), Healthcare Operations
+    Access: Restricted to approved researchers
+    Safeguards: Data Use Agreements, IRB oversight
+
+PROCESS FLOW
+------------
+
+Step 1: Data Ingestion
+- EHR-MAIN continuously updated by clinicians
+- CLAIMS-DB receives claims data from payers (daily batch)
+- RPM-PLATFORM receives device data (real-time)
+- WEARABLE-API pulls data from patient wearables (hourly)
+- SDOH-DB updated via patient surveys and community health workers
+- Purpose: Maintain comprehensive patient data
+
+Step 2: Data Integration
+- PHM-SYSTEM aggregates data from all sources
+- Patient ID used as master identifier
+- Data normalized and standardized
+- Duplicate records resolved
+- Purpose: Create unified patient view
+
+Step 3: Data Quality Checks
+- Automated validation rules applied
+- Missing data flagged
+- Outliers identified for review
+- Inconsistencies resolved
+- Purpose: Ensure data accuracy for analytics
+
+Step 4: Risk Stratification
+- HEALTH-ML calculates risk scores for all patients
+- Patients categorized: Low, Medium, High, Very High risk
+- Risk factors identified for each patient
+- Purpose: Prioritize care management resources
+
+Step 5: Care Gap Identification
+- PHM-SYSTEM identifies overdue preventive services
+- Compares patient data to quality measures
+- Generates care gap reports by patient and provider
+- Purpose: Improve quality of care, close gaps
+
+Step 6: Predictive Modeling
+- HEALTH-ML generates predictions for high-risk patients:
+  * Hospital readmission probability
+  * Disease progression timeline
+  * Medication adherence likelihood
+- Models updated monthly with new data
+- Purpose: Enable proactive interventions
+
+Step 7: Care Team Notification
+- High-risk patients flagged in EHR-MAIN
+- Care managers receive patient lists
+- Alerts sent for critical predictions (e.g., high readmission risk)
+- Purpose: Trigger care management interventions
+
+Step 8: Intervention Planning
+- Care managers review patient data
+- Develop personalized care plans
+- Coordinate with providers
+- Interventions may include:
+  * Medication reconciliation
+  * Home health visits
+  * Transportation assistance
+  * Social services referrals
+  * Patient education
+- Purpose: Prevent adverse outcomes
+
+Step 9: Outcome Tracking
+- Patient outcomes monitored in PHM-SYSTEM
+- Intervention effectiveness measured
+- Readmissions, ED visits, costs tracked
+- Purpose: Evaluate program success, refine models
+
+Step 10: Quality Reporting
+- Aggregated data reported to:
+  * CMS (Medicare quality measures)
+  * Health plans (HEDIS measures)
+  * State health departments
+  * Internal quality committees
+- Purpose: Demonstrate quality, identify improvement opportunities
+
+Step 11: Research and Innovation
+- De-identified data exported to RESEARCH-DB
+- Researchers analyze for new insights
+- Findings published (no PHI disclosed)
+- Models improved based on research
+- Purpose: Advance medical knowledge
+
+DATA SHARING AND TRANSFERS
+---------------------------
+
+Internal Sharing:
+- Clinicians: Access to patient data for treatment
+- Care Managers: Access to assigned patient data
+- Billing: Access to demographic and insurance data
+- Quality Team: Access to aggregated quality metrics
+- Research Team: Access to de-identified data only
+
+External Sharing (HIPAA-Compliant):
+- Health Plans: Claims data, quality measures (Business Associate Agreement)
+- Specialists: Referral information, clinical summaries (Treatment)
+- Laboratories: Orders and results (Treatment)
+- Pharmacies: Prescriptions (Treatment)
+- Public Health Authorities: Reportable diseases, immunizations (Legal Requirement)
+- CMS: Quality reporting (Legal Requirement)
+
+Patient-Directed Sharing:
+- Patient Authorization: Share records with other providers, family members
+- Patient Portal: Patients download their own records
+- Right to Request Restrictions: Patients can limit certain disclosures
+
+No Sharing Without Authorization:
+- Marketing purposes (prohibited)
+- Sale of PHI (prohibited)
+- Employers (without authorization)
+- Life insurers (without authorization)
+
+International Transfers:
+- None - all data stored in US
+- For EU patients: GDPR compliance, explicit consent
+
+PATIENT RIGHTS (HIPAA)
+----------------------
+
+Right of Access:
+- Patients can obtain copy of their medical records
+- Response time: 30 days (extendable to 60 days)
+- Format: Electronic or paper, as requested
+- Fee: Reasonable cost-based fee allowed
+
+Right to Amend:
+- Patients can request corrections to their records
+- Provider may deny if information is accurate
+- Patient can submit statement of disagreement
+
+Right to Accounting of Disclosures:
+- Patients can request list of disclosures (past 6 years)
+- Excludes: Treatment, payment, operations, patient-authorized
+
+Right to Request Restrictions:
+- Patients can request limits on uses and disclosures
+- Provider not required to agree (except for self-pay restriction)
+
+Right to Confidential Communications:
+- Patients can request alternative contact methods
+- Must accommodate reasonable requests
+
+Right to Notification of Breach:
+- Patients notified if PHI breach occurs
+- Notification within 60 days of discovery
+
+SECURITY MEASURES (HIPAA Security Rule)
+----------------------------------------
+
+Administrative Safeguards:
+- Security Officer designated
+- Workforce training on HIPAA
+- Access authorization procedures
+- Incident response procedures
+- Business Associate Agreements with all vendors
+- Regular risk assessments
+
+Physical Safeguards:
+- Facility access controls (badge system)
+- Workstation security (locked screens)
+- Device and media controls (encryption, disposal)
+- Secure data center (24/7 monitoring)
+
+Technical Safeguards:
+- Access controls (unique user IDs, automatic logoff)
+- Audit controls (all access logged)
+- Integrity controls (data not altered)
+- Transmission security (encryption in transit - TLS 1.3)
+- Encryption at rest (AES-256)
+
+COMPLIANCE NOTES
+----------------
+
+HIPAA Privacy Rule:
+- Minimum necessary standard applied
+- Notice of Privacy Practices provided to all patients
+- Patient authorizations obtained when required
+- Disclosures tracked and logged
+
+HIPAA Security Rule:
+- Risk assessment completed annually
+- Security policies and procedures documented
+- Technical safeguards implemented
+- Workforce trained on security
+
+HITECH Act:
+- Breach notification procedures in place
+- Business Associate Agreements with all vendors
+- Accounting of disclosures for EHR access
+- Patient access to EHR data
+
+GDPR (for EU patients):
+- Legal basis: Consent, Vital interests, Legal obligation
+- Data minimization applied
+- Right to erasure (subject to legal retention)
+- Data Protection Impact Assessment completed
+
+State Laws:
+- California CMIA: Additional protections for medical information
+- New York: Stricter breach notification requirements
+- Massachusetts: Encryption requirements
+
+42 CFR Part 2 (Substance Use Disorder):
+- Separate consent for substance use treatment records
+- Stricter disclosure requirements
+- Special protections for SUD data
+
+RISKS AND MITIGATION
+--------------------
+
+Risk: Unauthorized access to PHI
+Mitigation: Access controls, audit logging, workforce training, sanctions
+
+Risk: Data breach exposing patient information
+Mitigation: Encryption, security assessments, incident response plan, insurance
+
+Risk: Algorithmic bias in predictive models
+Mitigation: Fairness audits, diverse training data, human oversight, transparency
+
+Risk: Discrimination based on SDOH data
+Mitigation: Access restrictions, training, policies prohibiting discrimination
+
+Risk: Patient privacy concerns limiting data sharing
+Mitigation: Transparency, patient education, opt-in for non-essential uses
+
+Risk: Non-compliance with HIPAA
+Mitigation: Compliance program, regular audits, training, legal review
+
+Risk: Inaccurate predictions leading to inappropriate care
+Mitigation: Clinical validation, human review, continuous model monitoring
+
+ETHICAL CONSIDERATIONS
+----------------------
+
+Beneficence:
+- Analytics used to improve patient outcomes
+- Interventions based on evidence
+- Patient welfare prioritized over cost savings
+
+Autonomy:
+- Patients informed about data uses
+- Opt-in for non-essential uses (wearables, research)
+- Patients can request restrictions
+
+Justice:
+- Algorithms audited for bias
+- Care management resources allocated fairly
+- Health disparities research to reduce inequities
+
+Privacy:
+- Data minimization principles applied
+- De-identification for research
+- Secure systems and access controls
+
+PROGRAM OUTCOMES
+----------------
+
+Clinical Outcomes:
+- 25% reduction in hospital readmissions for high-risk patients
+- 15% improvement in chronic disease management metrics
+- 30% increase in preventive care completion rates
+
+Operational Outcomes:
+- $5M annual cost savings from reduced readmissions
+- 40% reduction in emergency department visits for managed patients
+- 20% improvement in care coordination efficiency
+
+Patient Satisfaction:
+- 85% of patients satisfied with care coordination
+- 70% of patients actively using patient portal
+- 60% of eligible patients enrolled in RPM programs
+
+CONTACT INFORMATION
+-------------------
+
+Privacy Officer: privacy@healthsystem.org
+Security Officer: security@healthsystem.org
+Patient Rights: patientrights@healthsystem.org
+Research Ethics: irb@healthsystem.org
+Compliance Hotline: 1-800-COMPLY (anonymous)

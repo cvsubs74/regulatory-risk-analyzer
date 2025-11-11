@@ -1,0 +1,379 @@
+BUSINESS PROCESS: Personalized Marketing Campaign Management
+==============================================================
+
+Process Owner: Marketing Operations Team
+Last Updated: November 2025
+Regulatory Framework: GDPR, CCPA, CAN-SPAM, CASL
+
+PROCESS OVERVIEW
+----------------
+This process describes how we create, execute, and optimize personalized marketing 
+campaigns across email, SMS, and digital advertising channels using customer data 
+and behavioral analytics.
+
+DATA ASSETS USED
+----------------
+
+1. CUSTOMER DATA PLATFORM (CDP-MAIN)
+   Location: Segment CDP (AWS us-west-2)
+   Purpose: Unified customer profiles and segmentation
+   Personal Data Stored:
+   - Customer ID (unique identifier)
+   - Email Address (campaign targeting)
+   - Phone Number (SMS campaigns)
+   - Full Name (personalization)
+   - Age Range (demographic targeting)
+   - Gender (demographic targeting)
+   - Location (city, state, country - geo-targeting)
+   - Language Preference (content localization)
+   - Income Range (estimated, for targeting)
+   - Household Composition (estimated)
+   
+   Legal Basis: Consent (marketing), Legitimate interest (customer relationship)
+   Retention Period: Until consent withdrawn or 3 years of inactivity
+
+2. BEHAVIORAL ANALYTICS DATABASE (ANALYTICS-DB)
+   Location: Google BigQuery (us-central1)
+   Purpose: Track customer interactions and behavior
+   Personal Data Collected:
+   - Customer ID (linkage to profile)
+   - Website Visit History (pages viewed, time spent)
+   - Product Browsing History (items viewed, searched)
+   - Purchase History (products bought, amounts, dates)
+   - Email Engagement (opens, clicks, unsubscribes)
+   - App Usage Data (features used, session duration)
+   - Device Information (type, OS, browser)
+   - IP Address (location inference, fraud detection)
+   - Cookie IDs (cross-device tracking)
+   
+   Legal Basis: Consent (cookies), Legitimate interest (service improvement)
+   Retention Period: 2 years from collection
+
+3. EMAIL MARKETING PLATFORM (EMAIL-PLATFORM)
+   Provider: Mailchimp
+   Purpose: Send personalized email campaigns
+   Personal Data Shared:
+   - Email Address
+   - First Name, Last Name
+   - Customer Segment (e.g., "High Value", "At Risk")
+   - Purchase History Summary
+   - Email Preferences
+   - Engagement Scores
+   
+   Legal Basis: Consent (explicit opt-in required)
+   Data Processing: Mailchimp acts as processor
+   Opt-out: Unsubscribe link in every email
+
+4. SMS MARKETING SERVICE (SMS-GATEWAY)
+   Provider: Twilio
+   Purpose: Send promotional SMS messages
+   Personal Data Shared:
+   - Phone Number
+   - First Name
+   - Customer Segment
+   - SMS Opt-in Status
+   - SMS Opt-in Date
+   
+   Legal Basis: Explicit consent (double opt-in)
+   Compliance: TCPA, CTIA guidelines
+   Opt-out: STOP keyword processing
+
+5. ADVERTISING PLATFORMS
+   
+   a) GOOGLE ADS (GOOGLE-ADS-ACCOUNT)
+      Purpose: Display and search advertising
+      Personal Data Shared:
+      - Hashed Email Addresses (Customer Match)
+      - Phone Numbers (hashed)
+      - Customer Segments (for Similar Audiences)
+      
+      Legal Basis: Legitimate interest, Consent (cookies)
+      Data Matching: Google matches hashed data to user accounts
+
+   b) FACEBOOK ADS (META-ADS-ACCOUNT)
+      Purpose: Social media advertising
+      Personal Data Shared:
+      - Hashed Email Addresses (Custom Audiences)
+      - Hashed Phone Numbers
+      - Customer Segments
+      - Lookalike Audience Seeds
+      
+      Legal Basis: Legitimate interest, Consent (cookies)
+      Data Matching: Meta matches hashed data to user accounts
+
+   c) LINKEDIN ADS (LINKEDIN-ADS-ACCOUNT)
+      Purpose: B2B advertising
+      Personal Data Shared:
+      - Work Email Addresses (hashed)
+      - Company Name
+      - Job Title (if available)
+      
+      Legal Basis: Legitimate interest (B2B marketing)
+
+6. PREDICTIVE ANALYTICS ENGINE (ML-PREDICT)
+   Location: AWS SageMaker (us-east-1)
+   Purpose: Predict customer behavior and preferences
+   Personal Data Processed:
+   - Customer ID
+   - Purchase History
+   - Browsing Behavior
+   - Email Engagement History
+   - Demographic Data
+   - Predicted Lifetime Value (calculated)
+   - Churn Risk Score (calculated)
+   - Product Affinity Scores (calculated)
+   
+   Legal Basis: Legitimate interest (business optimization)
+   Automated Decision: Yes - campaign targeting decisions
+   Human Review: Available upon request
+
+7. A/B TESTING PLATFORM (OPTIMIZE-PLATFORM)
+   Provider: Optimizely
+   Purpose: Test campaign variations
+   Personal Data Processed:
+   - Anonymous User ID (cookie-based)
+   - Test Variant Assignment
+   - Conversion Events
+   - Session Behavior
+   
+   Legal Basis: Consent (cookies), Legitimate interest
+   Anonymization: Personal identifiers removed after 30 days
+
+8. CONSENT MANAGEMENT PLATFORM (CMP-SYSTEM)
+   Location: OneTrust (cloud-hosted)
+   Purpose: Manage marketing consent and preferences
+   Personal Data Stored:
+   - Customer ID
+   - Email Address
+   - Consent Records (what, when, how obtained)
+   - Preference Center Selections
+   - Opt-out Requests
+   - Communication Channel Preferences
+   
+   Legal Basis: Legal obligation (consent records)
+   Retention Period: 7 years (proof of consent)
+
+PROCESS FLOW
+------------
+
+Step 1: Audience Segmentation
+- Marketing team defines target audience criteria
+- Query CDP-MAIN for matching customers
+- Apply filters: demographics, behavior, purchase history
+- Data used: All customer profile and behavioral data
+- Purpose: Identify relevant audience for campaign
+
+Step 2: Predictive Scoring
+- ML-PREDICT generates scores for target audience
+- Scores calculated: Conversion probability, churn risk, LTV
+- Data used: Historical behavior, purchase patterns
+- Purpose: Prioritize high-value prospects, optimize spend
+
+Step 3: Consent Verification
+- Check CMP-SYSTEM for marketing consent status
+- Filter out customers who haven't consented
+- Verify channel-specific consent (email vs SMS)
+- Data used: Consent records, opt-out lists
+- Purpose: Ensure compliance with consent requirements
+
+Step 4: Personalization
+- Generate personalized content for each recipient
+- Data used: Name, purchase history, browsing behavior, preferences
+- Variables: Product recommendations, discount offers, content topics
+- Purpose: Increase engagement and conversion rates
+
+Step 5: Campaign Execution
+
+Email Campaign:
+- Upload audience to EMAIL-PLATFORM (Mailchimp)
+- Data shared: Email, name, segment, personalization variables
+- Emails sent with tracking pixels
+- Purpose: Deliver marketing message
+
+SMS Campaign:
+- Upload audience to SMS-GATEWAY (Twilio)
+- Data shared: Phone number, name, message content
+- SMS sent with opt-out instructions
+- Purpose: Deliver time-sensitive offers
+
+Digital Advertising:
+- Upload hashed customer lists to ad platforms
+- Google Ads: Create Customer Match audiences
+- Facebook Ads: Create Custom Audiences
+- LinkedIn Ads: Create Matched Audiences
+- Purpose: Retarget customers, create lookalike audiences
+
+Step 6: Performance Tracking
+- Track campaign performance in ANALYTICS-DB
+- Metrics: Opens, clicks, conversions, revenue
+- Data collected: Engagement events, conversion events
+- Link back to customer profiles in CDP-MAIN
+- Purpose: Measure ROI, optimize future campaigns
+
+Step 7: A/B Testing Analysis
+- OPTIMIZE-PLATFORM tracks test performance
+- Compare variants: subject lines, content, offers, timing
+- Statistical significance calculated
+- Winner selected for broader rollout
+- Purpose: Continuous improvement
+
+Step 8: Attribution and Reporting
+- Multi-touch attribution across channels
+- Data sources: ANALYTICS-DB, EMAIL-PLATFORM, ad platforms
+- Customer journey reconstruction
+- Revenue attribution by touchpoint
+- Purpose: Understand marketing effectiveness
+
+DATA SHARING AND TRANSFERS
+---------------------------
+
+International Transfers:
+- Segment CDP: Data stored in US (AWS)
+- Mailchimp: Data processed in US
+- Twilio: Data processed in US
+- Google: Data processed globally
+- Meta: Data processed globally
+- Safeguards: Standard Contractual Clauses, adequacy decisions
+
+Third-Party Data Enrichment:
+- Experian Marketing Services: Demographic data enrichment
+- Data shared: Email addresses (hashed)
+- Data received: Age range, income range, interests
+- Legal Basis: Legitimate interest
+- Purpose: Improve targeting accuracy
+
+Data Brokers (Opt-out):
+- We do NOT sell customer data to data brokers
+- We do NOT purchase lists from data brokers
+- All marketing data collected directly or with consent
+
+INDIVIDUAL RIGHTS
+-----------------
+
+Right to Access: Customers can view their profile data in account settings
+Right to Rectification: Update preferences in preference center
+Right to Erasure: Request deletion via privacy@company.com
+Right to Restrict Processing: Opt-out of specific marketing channels
+Right to Data Portability: Export marketing data in JSON format
+Right to Object: Opt-out links in all marketing communications
+Automated Decision-Making: Customers can request human review of targeting decisions
+
+CONSENT MANAGEMENT
+------------------
+
+Consent Collection:
+- Explicit opt-in required for email marketing
+- Double opt-in required for SMS marketing
+- Cookie consent banner for behavioral tracking
+- Granular consent options (email, SMS, phone, mail)
+
+Consent Records:
+- What: Specific consent given (e.g., "email marketing")
+- When: Timestamp of consent
+- How: Method of collection (e.g., "signup form", "preference center")
+- Version: Privacy policy version at time of consent
+
+Withdrawal:
+- Unsubscribe links in all emails
+- STOP keyword for SMS
+- Preference center for granular control
+- Processing time: Immediate (automated)
+
+SECURITY MEASURES
+-----------------
+
+Technical Measures:
+- Encryption at rest and in transit
+- Hashing before sharing with ad platforms
+- Access controls and audit logging
+- Regular security assessments
+- Data loss prevention (DLP) tools
+
+Organizational Measures:
+- Marketing team training on privacy
+- Data minimization principles
+- Regular consent audits
+- Vendor risk assessments
+- Privacy by design in campaign planning
+
+COMPLIANCE NOTES
+----------------
+
+GDPR Compliance:
+- Legal basis documented (consent or legitimate interest)
+- Consent freely given, specific, informed, unambiguous
+- Easy withdrawal of consent
+- Data minimization applied
+- Privacy notices at collection points
+- DPIA completed for profiling activities
+
+CCPA Compliance:
+- Privacy policy discloses marketing data use
+- "Do Not Sell" respected (we don't sell data)
+- Opt-out of targeted advertising available
+- Right to know what data is collected
+- Right to delete marketing data
+
+CAN-SPAM Compliance (US):
+- Accurate header information
+- Clear subject lines
+- Physical address in emails
+- Unsubscribe mechanism in every email
+- Honor opt-outs within 10 business days
+
+CASL Compliance (Canada):
+- Express consent required for commercial emails
+- Identification of sender
+- Unsubscribe mechanism
+- Honor opt-outs within 10 business days
+
+TCPA Compliance (US - SMS):
+- Prior express written consent for SMS
+- Clear disclosure of message frequency
+- STOP keyword processing
+- HELP keyword support
+
+RISKS AND MITIGATION
+--------------------
+
+Risk: Sending marketing to opted-out customers
+Mitigation: Real-time consent checks, suppression lists, automated opt-out processing
+
+Risk: Excessive profiling and discrimination
+Mitigation: Fairness reviews, avoid sensitive categories, human oversight
+
+Risk: Data breach exposing customer preferences
+Mitigation: Encryption, access controls, vendor security assessments
+
+Risk: Non-compliance with consent requirements
+Mitigation: Consent management platform, regular audits, training
+
+Risk: Unauthorized data sharing with ad platforms
+Mitigation: Data processing agreements, hashing, minimal data sharing
+
+Risk: Customer complaints about irrelevant marketing
+Mitigation: Preference centers, frequency caps, relevance scoring
+
+PERFORMANCE METRICS
+-------------------
+
+Privacy Metrics:
+- Consent rate: 45% of customers opt-in to email
+- Opt-out rate: 2% per campaign
+- Preference center usage: 15% of customers
+- Privacy request response time: <5 days average
+
+Campaign Metrics:
+- Email open rate: 22% average
+- Click-through rate: 3.5% average
+- Conversion rate: 1.2% average
+- SMS response rate: 8% average
+- Ad platform ROAS: 4.2x average
+
+CONTACT INFORMATION
+-------------------
+
+Marketing Operations: marketing-ops@company.com
+Privacy Team: privacy@company.com
+Unsubscribe Support: unsubscribe@company.com
+Data Protection Officer: dpo@company.com

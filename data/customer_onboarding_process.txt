@@ -1,0 +1,228 @@
+BUSINESS PROCESS: Customer Onboarding and KYC Verification
+===========================================================
+
+Process Owner: Customer Operations Team
+Last Updated: November 2025
+Regulatory Framework: GDPR, CCPA, KYC/AML Requirements
+
+PROCESS OVERVIEW
+----------------
+This process describes how we onboard new customers for our financial services platform, 
+including identity verification, risk assessment, and account setup.
+
+DATA ASSETS USED
+----------------
+
+1. CUSTOMER REGISTRATION DATABASE (CRM-DB-001)
+   Location: AWS RDS PostgreSQL (us-east-1)
+   Purpose: Store customer profile and registration data
+   Personal Data Collected:
+   - Full Name (required for identity verification)
+   - Email Address (primary communication channel)
+   - Phone Number (two-factor authentication)
+   - Date of Birth (age verification, regulatory requirement)
+   - Residential Address (jurisdiction determination, compliance)
+   - Nationality (sanctions screening, regulatory compliance)
+   - Government ID Number (KYC verification)
+   - Tax Identification Number (tax reporting obligations)
+   
+   Legal Basis: Contract performance, Legal obligation (KYC/AML)
+   Retention Period: 7 years after account closure (regulatory requirement)
+
+2. IDENTITY VERIFICATION SERVICE (ID-VERIFY-SVC)
+   Provider: Jumio Identity Verification API
+   Purpose: Verify customer identity documents
+   Personal Data Shared:
+   - Government-issued ID images (passport, driver's license)
+   - Facial biometric data (selfie for liveness detection)
+   - Document metadata (issue date, expiry, document number)
+   
+   Data Processing: Real-time verification, no long-term storage by us
+   Third-Party Storage: Jumio retains data per their retention policy
+   Legal Basis: Legal obligation (KYC), Legitimate interest (fraud prevention)
+
+3. CREDIT SCORING SYSTEM (CREDIT-SCORE-API)
+   Provider: Experian Credit Bureau API
+   Purpose: Assess creditworthiness and fraud risk
+   Personal Data Shared:
+   - Full Name
+   - Date of Birth
+   - Social Security Number / National ID
+   - Current and Previous Addresses
+   - Employment Information
+   
+   Legal Basis: Legitimate interest (risk assessment), Consent
+   Data Minimization: Only share data necessary for credit check
+
+4. SANCTIONS SCREENING DATABASE (SANCTIONS-DB)
+   Provider: Dow Jones Risk & Compliance
+   Purpose: Screen against OFAC, UN, EU sanctions lists
+   Personal Data Processed:
+   - Full Name
+   - Date of Birth
+   - Nationality
+   - Passport Number
+   
+   Legal Basis: Legal obligation (AML/CTF regulations)
+   Automated Decision: Yes - account creation blocked if match found
+
+5. CUSTOMER COMMUNICATION PLATFORM (EMAIL-SVC)
+   Provider: SendGrid
+   Purpose: Send onboarding emails and notifications
+   Personal Data Shared:
+   - Email Address
+   - First Name (for personalization)
+   - Account Status
+   
+   Legal Basis: Contract performance
+   Opt-out: Marketing emails only (transactional emails required)
+
+6. DOCUMENT STORAGE SYSTEM (DOC-VAULT)
+   Location: AWS S3 with encryption (us-east-1)
+   Purpose: Store copies of identity documents
+   Personal Data Stored:
+   - Scanned ID documents (passport, driver's license)
+   - Proof of address documents (utility bills, bank statements)
+   - Signed customer agreements
+   
+   Security: AES-256 encryption at rest, TLS in transit
+   Access Control: Role-based, audit logged
+   Retention: 7 years (regulatory requirement)
+
+PROCESS FLOW
+------------
+
+Step 1: Initial Registration
+- Customer submits registration form via web application
+- Data collected: Name, Email, Phone, Password
+- Data stored in: CRM-DB-001
+- Purpose: Create user account, enable login
+
+Step 2: Identity Verification
+- Customer uploads government ID and takes selfie
+- Data sent to: ID-VERIFY-SVC (Jumio)
+- Biometric comparison performed
+- Result stored in: CRM-DB-001 (verification status only)
+- Original documents stored in: DOC-VAULT
+- Purpose: Comply with KYC regulations, prevent identity fraud
+
+Step 3: Personal Information Collection
+- Customer provides detailed personal information
+- Data collected: DOB, Address, Nationality, Tax ID, SSN
+- Data stored in: CRM-DB-001
+- Purpose: Regulatory compliance, tax reporting
+
+Step 4: Credit and Risk Assessment
+- System queries CREDIT-SCORE-API with customer data
+- Credit score and risk indicators retrieved
+- Data stored in: CRM-DB-001 (score and risk level only)
+- Purpose: Determine account limits, pricing tier
+
+Step 5: Sanctions Screening
+- Automated check against SANCTIONS-DB
+- Customer data matched against watchlists
+- If match found: Account creation blocked, compliance team notified
+- Result logged in: CRM-DB-001
+- Purpose: Comply with AML/CTF regulations
+
+Step 6: Account Approval
+- Manual review by compliance team (if flagged)
+- Automated approval (if all checks pass)
+- Decision recorded in: CRM-DB-001
+- Purpose: Final compliance verification
+
+Step 7: Welcome Communication
+- Welcome email sent via EMAIL-SVC
+- Includes account details and next steps
+- Purpose: Customer communication, contract performance
+
+DATA SHARING AND TRANSFERS
+---------------------------
+
+International Transfers:
+- Jumio (ID verification): Data processed in EU and US
+- Experian: Data processed in US
+- SendGrid: Data processed in US
+- Safeguards: Standard Contractual Clauses (SCCs), adequacy decisions
+
+Third-Party Processors:
+- AWS (infrastructure): Data Processing Agreement in place
+- Jumio: Data Processing Agreement, certified under Privacy Shield successor
+- Experian: Data Processing Agreement
+- Dow Jones: Data Processing Agreement
+- SendGrid: Data Processing Agreement
+
+INDIVIDUAL RIGHTS
+-----------------
+
+Right to Access: Customers can request copy of their data via support portal
+Right to Rectification: Customers can update information in account settings
+Right to Erasure: Available after account closure (subject to retention requirements)
+Right to Restrict Processing: Available for disputed data
+Right to Data Portability: Export available in JSON format
+Right to Object: Available for marketing communications
+Automated Decision-Making: Credit decisions can be reviewed by human
+
+SECURITY MEASURES
+-----------------
+
+Technical Measures:
+- Encryption at rest (AES-256) and in transit (TLS 1.3)
+- Multi-factor authentication for employee access
+- Role-based access control (RBAC)
+- Regular security audits and penetration testing
+- Automated vulnerability scanning
+
+Organizational Measures:
+- Employee background checks
+- Confidentiality agreements
+- Security awareness training
+- Incident response procedures
+- Data breach notification process (72 hours)
+
+COMPLIANCE NOTES
+----------------
+
+GDPR Compliance:
+- Legal basis documented for each processing activity
+- Data Protection Impact Assessment (DPIA) completed
+- Privacy notices provided at collection
+- Consent obtained where required
+- Data minimization principles applied
+
+CCPA Compliance:
+- Privacy policy discloses data collection and sharing
+- Opt-out mechanisms for data sales (N/A - we don't sell data)
+- Do Not Sell My Personal Information link provided
+- Consumer rights request process established
+
+KYC/AML Compliance:
+- Customer Due Diligence (CDD) performed
+- Enhanced Due Diligence (EDD) for high-risk customers
+- Ongoing monitoring for suspicious activity
+- Record retention per regulatory requirements (7 years)
+
+RISKS AND MITIGATION
+--------------------
+
+Risk: Unauthorized access to identity documents
+Mitigation: Encryption, access controls, audit logging, regular security reviews
+
+Risk: Data breach at third-party processor
+Mitigation: Vendor due diligence, DPAs, contractual liability, insurance
+
+Risk: Non-compliance with KYC regulations
+Mitigation: Automated checks, compliance team review, regular audits
+
+Risk: Excessive data retention
+Mitigation: Automated deletion after retention period, regular data audits
+
+Risk: Inadequate consent for data processing
+Mitigation: Clear privacy notices, granular consent options, consent management platform
+
+CONTACT INFORMATION
+-------------------
+
+Data Protection Officer: dpo@company.com
+Privacy Team: privacy@company.com
+Customer Support: support@company.com

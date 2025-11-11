@@ -1,0 +1,546 @@
+BUSINESS PROCESS: E-Commerce Personalized Recommendation Engine
+================================================================
+
+Process Owner: Product & Data Science Team
+Last Updated: November 2025
+Regulatory Framework: GDPR, CCPA, ePrivacy Directive, Consumer Protection Laws
+
+PROCESS OVERVIEW
+----------------
+This process describes how we collect, analyze, and use customer data to power 
+our personalized product recommendation engine across web, mobile, and email 
+channels. This includes behavioral tracking, purchase history analysis, and 
+collaborative filtering algorithms.
+
+DATA ASSETS USED
+----------------
+
+1. CUSTOMER PROFILE DATABASE (CUSTOMER-DB)
+   Location: PostgreSQL on AWS RDS (us-east-1)
+   Purpose: Store customer account and preference data
+   Personal Data Stored:
+   - Account Information:
+     * Customer ID (unique identifier)
+     * Email Address
+     * Full Name
+     * Phone Number (optional)
+     * Date of Birth (for age-gated products)
+     * Gender (optional, self-selected)
+     * Shipping Addresses (multiple)
+     * Billing Addresses
+     * Payment Methods (tokenized, last 4 digits only)
+   
+   - Preferences:
+     * Product Categories of Interest
+     * Size Preferences (clothing, shoes)
+     * Brand Preferences
+     * Price Range Preferences
+     * Communication Preferences (email, SMS, push)
+     * Language Preference
+     * Currency Preference
+   
+   Legal Basis: Contract (account management), Consent (marketing preferences)
+   Retention Period: Until account deletion or 3 years of inactivity
+
+2. BEHAVIORAL TRACKING SYSTEM (ANALYTICS-TRACKER)
+   Provider: Segment + Google Analytics 4
+   Location: Cloud (US and EU data centers)
+   Purpose: Track customer interactions across all touchpoints
+   Personal Data Collected:
+   - Session Data:
+     * Session ID (unique per visit)
+     * Customer ID (if logged in)
+     * Device ID (mobile app)
+     * Cookie ID (web browser)
+     * IP Address (for location, fraud detection)
+     * User Agent (browser, device type, OS)
+     * Referrer URL (traffic source)
+   
+   - Behavioral Data:
+     * Page Views (URLs, timestamps, duration)
+     * Product Views (product IDs, categories, prices)
+     * Search Queries (keywords entered)
+     * Filter Selections (price range, size, color, brand)
+     * Add to Cart Events (products, quantities)
+     * Wishlist Additions
+     * Product Comparisons
+     * Review Reads and Writes
+     * Video Views (product videos)
+     * Image Zoom Events
+     * Scroll Depth
+     * Click Patterns (heatmap data)
+   
+   Legal Basis: Consent (cookies), Legitimate interest (analytics)
+   Retention Period: 26 months (GDPR cookie guidance)
+
+3. PURCHASE HISTORY DATABASE (ORDER-DB)
+   Location: PostgreSQL on AWS RDS (us-east-1)
+   Purpose: Store complete order and transaction history
+   Personal Data Stored:
+   - Order Information:
+     * Order ID
+     * Customer ID
+     * Order Date and Time
+     * Products Purchased (SKUs, quantities, prices)
+     * Order Total (subtotal, tax, shipping, discounts)
+     * Payment Method Used
+     * Shipping Address
+     * Billing Address
+   
+   - Transaction Data:
+     * Payment Status
+     * Shipping Status
+     * Delivery Date
+     * Return/Refund History
+     * Customer Service Interactions
+   
+   Legal Basis: Contract (order fulfillment), Legal obligation (tax, accounting)
+   Retention Period: 7 years (tax/accounting requirements)
+
+4. RECOMMENDATION ENGINE (ML-RECOMMENDER)
+   Location: AWS SageMaker (us-east-1)
+   Purpose: Generate personalized product recommendations
+   Personal Data Processed:
+   - Customer ID
+   - Complete browsing history from ANALYTICS-TRACKER
+   - Complete purchase history from ORDER-DB
+   - Product ratings and reviews
+   - Wishlist items
+   - Cart abandonment data
+   - Email engagement data
+   - Demographic data (age, gender, location)
+   
+   Algorithms Used:
+   - Collaborative Filtering (user-user, item-item similarity)
+   - Content-Based Filtering (product attributes)
+   - Matrix Factorization (latent features)
+   - Deep Learning (neural collaborative filtering)
+   - Contextual Bandits (real-time optimization)
+   
+   Outputs Generated:
+   - Personalized product recommendations (ranked list)
+   - "Customers who bought X also bought Y"
+   - "Recommended for you" homepage section
+   - "Complete the look" outfit suggestions
+   - Email product recommendations
+   - Predicted product ratings
+   - Predicted purchase probability
+   
+   Legal Basis: Legitimate interest (service improvement), Consent (profiling)
+   Automated Decision: Yes - product recommendations
+   Human Review: Available upon request
+
+5. PRODUCT CATALOG DATABASE (CATALOG-DB)
+   Location: MongoDB on AWS (us-east-1)
+   Purpose: Store product information and metadata
+   Data Stored (No Personal Data):
+   - Product ID, Name, Description
+   - Category, Subcategory, Brand
+   - Price, Discounts, Availability
+   - Images, Videos
+   - Attributes (size, color, material, etc.)
+   - Reviews and Ratings (aggregated)
+   - Related Products
+   - Inventory Levels
+   
+   Used For: Matching products to customer preferences
+
+6. SEARCH PERSONALIZATION ENGINE (SEARCH-ENGINE)
+   Provider: Algolia
+   Location: Cloud (US data centers)
+   Purpose: Personalize search results based on user behavior
+   Personal Data Processed:
+   - Customer ID (hashed)
+   - Search Query History
+   - Click-Through Patterns
+   - Purchase History (for ranking)
+   - Location (for local inventory)
+   
+   Personalization:
+   - Boost products in preferred categories
+   - Prioritize preferred brands
+   - Adjust for size preferences
+   - Show local inventory first
+   
+   Legal Basis: Legitimate interest (service improvement)
+   Retention Period: 90 days
+
+7. EMAIL RECOMMENDATION SYSTEM (EMAIL-RECS)
+   Provider: Klaviyo
+   Location: Cloud (US data centers)
+   Purpose: Send personalized product recommendation emails
+   Personal Data Shared:
+   - Email Address
+   - First Name
+   - Customer Segment (VIP, Active, At-Risk, etc.)
+   - Recommended Products (from ML-RECOMMENDER)
+   - Recent Browsing History
+   - Cart Abandonment Data
+   - Purchase History Summary
+   - Predicted Next Purchase Date
+   
+   Email Types:
+   - Browse Abandonment (viewed but didn't buy)
+   - Cart Abandonment (added to cart but didn't checkout)
+   - Post-Purchase Recommendations (cross-sell)
+   - Replenishment Reminders (consumable products)
+   - Back-in-Stock Alerts
+   - Price Drop Alerts
+   
+   Legal Basis: Consent (marketing emails), Legitimate interest (transactional)
+   Opt-out: Unsubscribe link in every email
+
+8. MOBILE APP PUSH NOTIFICATION SYSTEM (PUSH-SERVICE)
+   Provider: Firebase Cloud Messaging
+   Location: Cloud (global)
+   Purpose: Send personalized push notifications
+   Personal Data Processed:
+   - Device Token (unique identifier)
+   - Customer ID
+   - App Usage Patterns
+   - Location (if permission granted)
+   - Recommended Products
+   - Cart Status
+   
+   Notification Types:
+   - Personalized product recommendations
+   - Flash sale alerts (for interested categories)
+   - Price drop notifications
+   - Back-in-stock alerts
+   - Order status updates
+   
+   Legal Basis: Consent (push notification permission)
+   Opt-out: Device settings, app settings
+
+9. A/B TESTING PLATFORM (EXPERIMENT-PLATFORM)
+   Provider: Optimizely
+   Location: Cloud (US data centers)
+   Purpose: Test recommendation algorithm variations
+   Personal Data Processed:
+   - Anonymous User ID (cookie-based)
+   - Test Variant Assignment
+   - Conversion Events (clicks, purchases)
+   - Revenue per User
+   
+   Tests Run:
+   - Algorithm variations (collaborative vs content-based)
+   - Recommendation placement (homepage, product page, cart)
+   - Number of recommendations shown
+   - Recommendation diversity vs relevance
+   
+   Legal Basis: Legitimate interest (service optimization)
+   Anonymization: Personal identifiers removed after test conclusion
+
+10. CUSTOMER SEGMENTATION PLATFORM (SEGMENT-ENGINE)
+    Location: AWS Redshift (us-east-1)
+    Purpose: Segment customers for targeted recommendations
+    Personal Data Processed:
+    - Customer ID
+    - All behavioral and purchase data
+    - RFM Scores (Recency, Frequency, Monetary)
+    - Customer Lifetime Value (predicted)
+    - Churn Risk Score
+    - Product Affinity Scores
+    
+    Segments Created:
+    - VIP Customers (high value, frequent)
+    - Active Shoppers (recent purchases)
+    - At-Risk (declining engagement)
+    - Dormant (no recent activity)
+    - New Customers (first 90 days)
+    - Category Enthusiasts (fashion, electronics, etc.)
+    - Price-Sensitive (discount seekers)
+    - Brand Loyalists
+    
+    Legal Basis: Legitimate interest (customer relationship management)
+
+11. FRAUD DETECTION SYSTEM (FRAUD-DETECTOR)
+    Provider: Sift Science
+    Location: Cloud (US data centers)
+    Purpose: Detect fraudulent transactions and abuse
+    Personal Data Shared:
+    - Customer ID
+    - Email Address
+    - Phone Number
+    - IP Address
+    - Device Fingerprint
+    - Billing/Shipping Addresses
+    - Payment Method Details
+    - Order History
+    - Behavioral Patterns
+    
+    Risk Scores Generated:
+    - Transaction fraud risk
+    - Account takeover risk
+    - Promo abuse risk
+    
+    Legal Basis: Legitimate interest (fraud prevention)
+    Automated Decision: Yes - high-risk orders flagged for review
+
+PROCESS FLOW
+------------
+
+Step 1: Data Collection
+- Customer browses website/app
+- ANALYTICS-TRACKER captures all interactions
+- Data sent to Segment, then to CUSTOMER-DB and data warehouse
+- Purpose: Build comprehensive behavioral profile
+
+Step 2: Real-Time Event Processing
+- Each event (page view, add to cart, etc.) triggers:
+  * Update to customer profile
+  * Input to recommendation engine
+  * Fraud risk assessment
+- Purpose: Enable real-time personalization
+
+Step 3: Recommendation Generation
+- ML-RECOMMENDER processes customer data
+- Multiple algorithms run in parallel:
+  * Collaborative filtering finds similar users
+  * Content-based filtering matches product attributes
+  * Deep learning models predict preferences
+- Recommendations ranked by predicted relevance
+- Purpose: Generate personalized product suggestions
+
+Step 4: Real-Time Personalization
+- Homepage recommendations updated
+- Search results personalized
+- Product page "You may also like" updated
+- Cart page cross-sell recommendations shown
+- Purpose: Increase engagement and conversion
+
+Step 5: Email Campaign Triggering
+- EMAIL-RECS monitors customer behavior
+- Triggers automated emails:
+  * Browse abandonment (2 hours after viewing)
+  * Cart abandonment (4 hours, 24 hours, 3 days)
+  * Post-purchase (3 days after delivery)
+  * Replenishment (based on product type)
+- Each email includes personalized recommendations
+- Purpose: Re-engage customers, drive repeat purchases
+
+Step 6: Push Notification Delivery
+- PUSH-SERVICE sends timely notifications
+- Triggered by:
+  * Price drops on viewed products
+  * Back-in-stock for wishlisted items
+  * Flash sales in preferred categories
+  * Abandoned cart reminders
+- Purpose: Drive app engagement and purchases
+
+Step 7: A/B Testing and Optimization
+- EXPERIMENT-PLATFORM randomly assigns users to test variants
+- Different recommendation algorithms tested
+- Conversion rates and revenue measured
+- Winning variant rolled out to all users
+- Purpose: Continuously improve recommendation quality
+
+Step 8: Segmentation and Targeting
+- SEGMENT-ENGINE updates customer segments daily
+- Segments used for:
+  * Tailored recommendation strategies
+  * Differentiated email frequency
+  * Exclusive offers for VIP customers
+  * Win-back campaigns for at-risk customers
+- Purpose: Optimize customer lifetime value
+
+Step 9: Performance Monitoring
+- Recommendation click-through rates tracked
+- Conversion rates measured
+- Revenue attribution calculated
+- Model performance metrics logged
+- Purpose: Ensure recommendation quality
+
+Step 10: Model Retraining
+- ML-RECOMMENDER retrained weekly with new data
+- New products incorporated
+- Seasonal trends captured
+- Algorithm improvements deployed
+- Purpose: Maintain recommendation relevance
+
+DATA SHARING AND TRANSFERS
+---------------------------
+
+Internal Sharing:
+- Marketing Team: Access to segmentation and campaign performance
+- Product Team: Access to aggregated recommendation metrics
+- Customer Service: Access to individual customer profiles (for support)
+- Data Science: Access to anonymized data for research
+
+External Sharing:
+- Segment: All behavioral data (Data Processing Agreement)
+- Klaviyo: Email addresses and recommendation data (DPA)
+- Algolia: Search queries and click data (DPA)
+- Sift Science: Fraud detection data (DPA)
+- Optimizely: A/B test data (DPA)
+
+International Transfers:
+- Segment: Data processed in US (Standard Contractual Clauses)
+- Klaviyo: Data processed in US (SCCs)
+- Algolia: Data processed in US (SCCs)
+- Google Analytics: Data processed globally (DPA, SCCs)
+
+No Data Sales:
+- We do NOT sell customer data to third parties
+- We do NOT share data with advertisers (except hashed for ad matching)
+
+INDIVIDUAL RIGHTS
+-----------------
+
+Right to Access:
+- Customers can download their data via account settings
+- Includes: profile, purchase history, browsing history, recommendations
+
+Right to Rectification:
+- Customers can update profile information
+- Incorrect data can be corrected via customer service
+
+Right to Erasure:
+- Account deletion available in settings
+- Data deleted within 30 days (except legal retention requirements)
+- Anonymized data retained for analytics
+
+Right to Restrict Processing:
+- Customers can opt-out of personalized recommendations
+- Generic recommendations shown instead
+- Opt-out of email recommendations
+
+Right to Data Portability:
+- Export data in JSON format
+- Includes all personal data we hold
+
+Right to Object:
+- Object to profiling for marketing
+- Object to automated decision-making
+- Human review available for fraud decisions
+
+Automated Decision-Making:
+- Customers informed about recommendation algorithms
+- Can opt-out of personalized recommendations
+- Explanation of recommendations available
+
+SECURITY MEASURES
+-----------------
+
+Technical Measures:
+- Encryption at rest (AES-256) and in transit (TLS 1.3)
+- Tokenization of payment data (PCI-DSS compliant)
+- Hashing of email addresses before sharing with ad platforms
+- Access controls (role-based, least privilege)
+- API rate limiting and authentication
+- Regular security audits and penetration testing
+
+Organizational Measures:
+- Data minimization (only collect necessary data)
+- Purpose limitation (data used only for stated purposes)
+- Employee training on data protection
+- Vendor risk assessments
+- Incident response procedures
+- Data breach notification process (72 hours)
+
+COMPLIANCE NOTES
+----------------
+
+GDPR Compliance:
+- Legal basis documented for each processing activity
+- Consent obtained for cookies and marketing
+- Privacy notice provided at registration
+- Data Protection Impact Assessment (DPIA) completed for profiling
+- Right to object to profiling
+- Explicit consent for automated decision-making
+
+CCPA Compliance:
+- Privacy policy discloses data collection and use
+- "Do Not Sell My Personal Information" link (N/A - we don't sell)
+- Right to opt-out of targeted advertising
+- Right to know what data is collected
+- Right to delete personal information
+
+ePrivacy Directive (Cookie Law):
+- Cookie consent banner on first visit
+- Granular consent options (necessary, analytics, marketing)
+- Non-essential cookies only after consent
+- Cookie policy explains all cookies used
+
+Consumer Protection:
+- Transparent pricing (no hidden fees)
+- Clear product descriptions
+- Honest reviews (verified purchases marked)
+- Easy returns and refunds
+
+RISKS AND MITIGATION
+--------------------
+
+Risk: Filter bubble (customers only see similar products)
+Mitigation: Diversity algorithms, serendipity factor, exploration vs exploitation
+
+Risk: Discriminatory recommendations (based on protected characteristics)
+Mitigation: Fairness audits, remove sensitive attributes, bias testing
+
+Risk: Privacy invasion (excessive tracking)
+Mitigation: Data minimization, consent management, clear privacy notices
+
+Risk: Data breach exposing customer behavior
+Mitigation: Encryption, access controls, security audits, incident response
+
+Risk: Manipulation through personalization
+Mitigation: Ethical guidelines, no dark patterns, customer control
+
+Risk: Inaccurate recommendations (poor customer experience)
+Mitigation: A/B testing, quality metrics, feedback loops, human review
+
+Risk: Non-compliance with privacy regulations
+Mitigation: Legal review, privacy by design, regular audits, training
+
+ETHICAL CONSIDERATIONS
+----------------------
+
+Transparency:
+- Explain why products are recommended
+- "Because you viewed..." explanations
+- Allow customers to see their profile data
+
+Control:
+- Opt-out of personalization available
+- Clear preferences in account settings
+- Easy to delete data
+
+Fairness:
+- Avoid discriminatory recommendations
+- Don't exploit vulnerabilities (e.g., addiction)
+- No predatory pricing based on profiling
+
+Respect:
+- Don't over-personalize (creepy factor)
+- Respect privacy boundaries
+- No manipulation or dark patterns
+
+RECOMMENDATION PERFORMANCE
+--------------------------
+
+Business Metrics:
+- 35% of revenue from recommended products
+- 2.5x higher conversion rate for personalized recommendations
+- 40% increase in average order value with cross-sell recommendations
+- 25% reduction in cart abandonment with personalized emails
+
+Customer Metrics:
+- 78% of customers find recommendations helpful
+- 65% of customers have personalization enabled
+- 12% opt-out rate for email recommendations
+- 4.2/5 average customer satisfaction with recommendations
+
+Technical Metrics:
+- 95% recommendation coverage (products with recommendations)
+- 0.85 AUC for purchase prediction model
+- 200ms average recommendation latency
+- 99.9% recommendation service uptime
+
+CONTACT INFORMATION
+-------------------
+
+Privacy Team: privacy@ecommerce.com
+Data Protection Officer: dpo@ecommerce.com
+Customer Support: support@ecommerce.com
+Opt-Out Requests: optout@ecommerce.com
+Data Subject Requests: datarequests@ecommerce.com

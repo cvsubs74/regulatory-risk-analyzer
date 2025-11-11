@@ -1,0 +1,412 @@
+BUSINESS PROCESS: Employee Productivity Monitoring and Analytics
+=================================================================
+
+Process Owner: Human Resources & IT Security
+Last Updated: November 2025
+Regulatory Framework: GDPR (Article 88 - Employment), CCPA, State Employee Privacy Laws
+
+PROCESS OVERVIEW
+----------------
+This process describes how we monitor employee productivity, system usage, and 
+security compliance using various monitoring tools and analytics platforms. This 
+includes computer activity tracking, email monitoring, and performance analytics.
+
+DATA ASSETS USED
+----------------
+
+1. ENDPOINT MONITORING SYSTEM (ENDPOINT-MONITOR)
+   Provider: Teramind Employee Monitoring Software
+   Location: On-premise servers (data center)
+   Purpose: Monitor employee computer activity for productivity and security
+   Personal Data Collected:
+   - Employee ID (unique identifier)
+   - Full Name (for reporting)
+   - Department and Job Title (context)
+   - Computer Login/Logout Times (attendance tracking)
+   - Active Application Usage (time spent per application)
+   - Website Browsing History (URLs visited, time spent)
+   - Keystroke Logging (optional, for high-risk roles)
+   - Screenshot Captures (periodic, configurable)
+   - File Access Logs (documents opened, modified, deleted)
+   - USB Device Usage (devices connected, files transferred)
+   - Print Job Logs (documents printed, page counts)
+   - Idle Time Tracking (periods of inactivity)
+   - Clipboard Activity (copy/paste operations)
+   
+   Legal Basis: Legitimate interest (business operations, security)
+   Notice: Employees informed via acceptable use policy
+   Retention Period: 90 days (rolling), 2 years for security incidents
+
+2. EMAIL MONITORING SYSTEM (EMAIL-ARCHIVE)
+   Provider: Mimecast Email Archiving
+   Location: Cloud (EU data centers)
+   Purpose: Monitor email for compliance, security, and data loss prevention
+   Personal Data Processed:
+   - Employee Email Address (sender/recipient)
+   - Email Content (subject, body, attachments)
+   - Email Metadata (timestamps, recipients, CC/BCC)
+   - Attachment Content (scanned for sensitive data)
+   - Email Classification (personal, confidential, public)
+   
+   Legal Basis: Legitimate interest (compliance, security), Legal obligation
+   Monitoring Scope: All corporate email (personal email excluded)
+   Retention Period: 7 years (regulatory requirement)
+
+3. NETWORK TRAFFIC ANALYZER (NETWORK-MONITOR)
+   Provider: Cisco Umbrella + Palo Alto Firewall
+   Location: On-premise and cloud
+   Purpose: Monitor network usage and detect security threats
+   Personal Data Collected:
+   - Employee ID (linked to IP address)
+   - IP Address (device identification)
+   - MAC Address (device tracking)
+   - Network Traffic Volume (bandwidth usage)
+   - Websites Accessed (DNS queries, URLs)
+   - File Downloads (types, sizes, sources)
+   - Cloud Service Usage (SaaS applications accessed)
+   - VPN Connection Logs (remote access times, locations)
+   - Bandwidth Usage by Application
+   
+   Legal Basis: Legitimate interest (network security, resource management)
+   Retention Period: 180 days
+
+4. TIME TRACKING SYSTEM (TIME-TRACK-DB)
+   Provider: Workday Time & Attendance
+   Location: Cloud (US data centers)
+   Purpose: Track employee work hours and project time allocation
+   Personal Data Stored:
+   - Employee ID
+   - Full Name
+   - Clock In/Out Times (precise timestamps)
+   - Break Times (duration and timing)
+   - Project Time Allocation (hours per project/task)
+   - Location Data (if using mobile app for field workers)
+   - Overtime Hours (calculated)
+   - Time-off Requests and Approvals
+   
+   Legal Basis: Contract (employment), Legal obligation (labor laws)
+   Retention Period: 7 years (payroll records)
+
+5. PRODUCTIVITY ANALYTICS PLATFORM (PROD-ANALYTICS)
+   Provider: Microsoft Viva Insights
+   Location: Microsoft 365 Cloud (tenant-specific)
+   Purpose: Analyze collaboration patterns and productivity metrics
+   Personal Data Processed:
+   - Employee ID
+   - Email Metadata (not content - counts, times, recipients)
+   - Meeting Data (duration, attendees, frequency)
+   - Chat Activity (Teams messages - counts, not content)
+   - Document Collaboration (co-authoring, sharing patterns)
+   - Working Hours Patterns (after-hours work, weekend work)
+   - Focus Time (uninterrupted work periods)
+   - Network Analysis (collaboration networks, team connections)
+   
+   Legal Basis: Legitimate interest (workplace optimization)
+   Aggregation: Individual data aggregated for team insights
+   Employee Access: Employees can view their own insights
+
+6. ACCESS CONTROL SYSTEM (PHYSICAL-ACCESS)
+   Provider: HID Global Access Control
+   Location: On-premise servers
+   Purpose: Track physical building access and office presence
+   Personal Data Collected:
+   - Employee ID
+   - Badge Number
+   - Entry/Exit Times (door access logs)
+   - Location (which doors/floors accessed)
+   - Visitor Escort Records (when escorting visitors)
+   - After-Hours Access (flagged for security review)
+   
+   Legal Basis: Legitimate interest (security, safety)
+   Retention Period: 1 year
+
+7. VIDEO SURVEILLANCE SYSTEM (CCTV-SYSTEM)
+   Provider: Axis Communications IP Cameras
+   Location: On-premise NVR (Network Video Recorder)
+   Purpose: Security and safety monitoring of office premises
+   Personal Data Collected:
+   - Video Footage (visual identification of employees)
+   - Facial Recognition Data (optional, for secure areas only)
+   - Timestamps and Location (camera ID)
+   
+   Legal Basis: Legitimate interest (security, safety), Legal obligation
+   Notice: Signage posted in monitored areas
+   Retention Period: 30 days (rolling), 1 year for incidents
+   Restricted Areas: No cameras in restrooms, changing rooms, break rooms
+
+8. PERFORMANCE MANAGEMENT SYSTEM (PERF-MGMT-DB)
+   Provider: Workday HCM
+   Location: Cloud (US data centers)
+   Purpose: Store performance reviews and productivity metrics
+   Personal Data Stored:
+   - Employee ID
+   - Full Name, Job Title, Department
+   - Performance Ratings (quarterly and annual)
+   - Goal Achievement Metrics
+   - Productivity Scores (derived from monitoring data)
+   - Manager Feedback and Comments
+   - Peer Review Feedback
+   - Development Plans
+   - Disciplinary Records (if applicable)
+   
+   Legal Basis: Contract (employment), Legitimate interest
+   Retention Period: Duration of employment + 7 years
+
+9. INSIDER THREAT DETECTION SYSTEM (THREAT-DETECT)
+   Provider: Securonix UEBA (User and Entity Behavior Analytics)
+   Location: Cloud (US data centers)
+   Purpose: Detect anomalous behavior indicating security risks
+   Personal Data Processed:
+   - Employee ID
+   - All monitoring data from other systems (aggregated)
+   - Behavioral Baselines (normal patterns)
+   - Anomaly Scores (deviation from baseline)
+   - Risk Scores (calculated threat level)
+   - Alert History (triggered security alerts)
+   
+   Legal Basis: Legitimate interest (security)
+   Automated Decision: Yes - alerts generated automatically
+   Human Review: All alerts reviewed by security team
+
+PROCESS FLOW
+------------
+
+Step 1: Continuous Data Collection
+- ENDPOINT-MONITOR captures computer activity in real-time
+- EMAIL-ARCHIVE processes all corporate emails
+- NETWORK-MONITOR logs all network traffic
+- TIME-TRACK-DB records clock in/out events
+- PHYSICAL-ACCESS logs badge swipes
+- CCTV-SYSTEM records video footage
+- Purpose: Gather comprehensive activity data
+
+Step 2: Data Aggregation
+- All monitoring data flows to PROD-ANALYTICS
+- Employee ID used as common key
+- Data normalized and timestamped
+- Purpose: Create unified employee activity profile
+
+Step 3: Productivity Analysis
+- PROD-ANALYTICS calculates productivity metrics:
+  * Active work time vs idle time
+  * Application usage patterns (productive vs non-productive)
+  * Email and meeting load
+  * Focus time availability
+  * After-hours work patterns
+- Data used: All monitoring sources
+- Purpose: Identify productivity trends and issues
+
+Step 4: Behavioral Baseline Creation
+- THREAT-DETECT establishes normal behavior patterns
+- Metrics: Typical login times, application usage, data access patterns
+- Machine learning models trained on historical data
+- Purpose: Enable anomaly detection
+
+Step 5: Anomaly Detection
+- THREAT-DETECT compares current activity to baseline
+- Flags deviations: unusual login times, excessive data downloads, 
+  unauthorized access attempts, suspicious email patterns
+- Risk scores calculated
+- Purpose: Identify potential insider threats or policy violations
+
+Step 6: Alert Generation
+- High-risk anomalies trigger security alerts
+- Alerts sent to: Security team, HR (if policy violation)
+- Data included: Employee ID, anomaly description, risk score, evidence
+- Purpose: Enable timely intervention
+
+Step 7: Investigation
+- Security/HR team reviews alerts
+- Access detailed logs from monitoring systems
+- Interview employee if necessary
+- Determine if legitimate business activity or policy violation
+- Purpose: Verify and respond to potential issues
+
+Step 8: Performance Review Integration
+- Productivity metrics exported to PERF-MGMT-DB
+- Managers access aggregated productivity data
+- Used as input for performance reviews (not sole factor)
+- Purpose: Inform performance evaluations
+
+Step 9: Reporting and Analytics
+- Weekly productivity reports generated
+- Department-level aggregations (not individual tracking)
+- Trends identified: productivity dips, resource needs
+- Executive dashboard with company-wide metrics
+- Purpose: Business intelligence and resource planning
+
+DATA SHARING AND TRANSFERS
+---------------------------
+
+Internal Sharing:
+- HR Department: Access to productivity metrics, policy violations
+- IT Security: Access to all monitoring data for security investigations
+- Managers: Access to team-level aggregated data (not individual unless flagged)
+- Legal/Compliance: Access for investigations and legal matters
+
+External Sharing:
+- Law Enforcement: Only with valid legal request (subpoena, warrant)
+- External Auditors: Aggregated data for compliance audits
+- Legal Counsel: For employment disputes or litigation
+
+International Transfers:
+- Teramind: Data stored on-premise (no transfer)
+- Mimecast: Data in EU (adequacy decision)
+- Workday: Data in US (Standard Contractual Clauses)
+- Microsoft: Data in tenant region (DPA in place)
+
+EMPLOYEE RIGHTS
+---------------
+
+Right to Information: Employees informed via:
+- Acceptable Use Policy (signed at onboarding)
+- Privacy Notice for Employees
+- Monitoring disclosure in employee handbook
+
+Right to Access: Employees can request:
+- Copy of their monitoring data
+- Productivity metrics used in performance reviews
+- Security alerts involving them
+
+Right to Rectification: Employees can:
+- Dispute inaccurate productivity metrics
+- Request correction of erroneous data
+- Provide context for flagged activities
+
+Right to Erasure: Limited due to:
+- Legal retention requirements (7 years for some data)
+- Legitimate business interests
+- Available after employment termination (subject to retention)
+
+Right to Object: Employees can:
+- Object to specific monitoring practices (reviewed case-by-case)
+- Request exclusion from certain analytics (if not essential)
+- Note: Core monitoring required for security cannot be opted out
+
+Automated Decision-Making:
+- Productivity scores used as input, not sole factor in decisions
+- Employees can request human review of any automated assessments
+- Right to explanation of how metrics are calculated
+
+SECURITY MEASURES
+-----------------
+
+Technical Measures:
+- Encryption of monitoring data at rest and in transit
+- Access controls: Role-based, need-to-know basis
+- Audit logging of all access to monitoring systems
+- Anonymization for aggregate reporting
+- Secure deletion after retention period
+
+Organizational Measures:
+- Clear policies on acceptable use and monitoring
+- Training for managers on ethical use of monitoring data
+- Regular audits of monitoring practices
+- Ethics committee review of new monitoring tools
+- Whistleblower protection for reporting misuse
+
+COMPLIANCE NOTES
+----------------
+
+GDPR Compliance (Article 88 - Employment):
+- Legal basis: Legitimate interest (balanced against employee rights)
+- Necessity: Monitoring proportionate to business needs
+- Transparency: Clear notice to employees
+- Data minimization: Only collect necessary data
+- Purpose limitation: Data used only for stated purposes
+- DPIA completed for monitoring systems
+
+CCPA Compliance:
+- Employee privacy notice provided
+- Right to know what data is collected
+- Right to request deletion (subject to exceptions)
+- No sale of employee data
+
+State Laws (California, New York, Connecticut):
+- Notice requirements met
+- No secret monitoring
+- Reasonable business purpose documented
+- Union consultation (where applicable)
+
+Electronic Communications Privacy Act (ECPA):
+- Business purpose exception applied
+- Notice provided to employees
+- Personal email accounts not monitored
+
+National Labor Relations Act (NLRA):
+- Monitoring does not interfere with protected concerted activity
+- Union communications not targeted
+- Policies reviewed for NLRA compliance
+
+ETHICAL CONSIDERATIONS
+----------------------
+
+Proportionality:
+- Monitoring intensity matched to risk level
+- Less intrusive methods preferred
+- Regular review of necessity
+
+Trust and Morale:
+- Transparent communication about monitoring
+- Focus on security and productivity, not surveillance
+- Employee feedback mechanisms
+
+Privacy Zones:
+- No monitoring in private areas (restrooms, etc.)
+- Personal devices not monitored
+- After-hours personal use accommodated
+
+Bias and Fairness:
+- Regular audits for discriminatory patterns
+- Diverse team reviewing alerts
+- Context considered in investigations
+
+RISKS AND MITIGATION
+--------------------
+
+Risk: Excessive monitoring damaging employee trust
+Mitigation: Transparency, clear policies, proportionate monitoring, employee input
+
+Risk: Misuse of monitoring data by managers
+Mitigation: Access controls, training, audit trails, ethics committee
+
+Risk: Data breach exposing sensitive employee information
+Mitigation: Encryption, access controls, security audits, incident response plan
+
+Risk: Discriminatory use of productivity metrics
+Mitigation: Bias audits, human review, multiple factors in decisions, appeals process
+
+Risk: Chilling effect on legitimate communications
+Mitigation: Clear policies on personal use, privacy zones, union protections
+
+Risk: Non-compliance with employee privacy laws
+Mitigation: Legal review, regular compliance audits, policy updates, training
+
+MONITORING STATISTICS
+---------------------
+
+System Coverage:
+- 100% of corporate computers monitored
+- 100% of corporate email archived
+- 95% of office space under video surveillance (excluding private areas)
+- 100% of network traffic logged
+
+Alert Volume:
+- Average 50 security alerts per month
+- 80% resolved as false positives or legitimate activity
+- 10% result in policy violation warnings
+- 10% result in serious investigations
+
+Employee Awareness:
+- 100% of employees signed acceptable use policy
+- 85% recall monitoring disclosure in onboarding
+- Quarterly reminders sent about monitoring practices
+
+CONTACT INFORMATION
+-------------------
+
+Human Resources: hr@company.com
+IT Security: security@company.com
+Data Protection Officer: dpo@company.com
+Employee Privacy Concerns: employee-privacy@company.com
+Ethics Hotline: 1-800-ETHICS (anonymous)
