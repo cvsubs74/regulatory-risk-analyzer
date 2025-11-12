@@ -10,4 +10,5 @@ flask
 flask-cors
 nest-asyncio>=1.6.0
 httpx
-google-generativeai
+google-genai==1.*  # Required for File Search API
+google-generativeai  # Keep for compatibility

@@ -6,10 +6,12 @@ import {
   DocumentTextIcon,
   ScaleIcon,
   CubeIcon,
-  TrashIcon
+  TrashIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import Chat from './pages/Chat';
 import CorpusExplorer from './pages/CorpusExplorer';
+import FileSearch from './pages/FileSearch';
 import { NotificationProvider, useNotifications } from './contexts/NotificationContext';
 import { TourProvider } from './contexts/TourContext';
 import { DemoModeProvider, useDemoMode } from './contexts/DemoModeContext';
@@ -25,9 +27,11 @@ function AppContent() {
 
   const tabs = [
     { id: 'chat', name: 'AI Assistant', icon: ChatBubbleLeftRightIcon, path: '/chat' },
+    { id: 'documents', name: 'Knowledgebase', icon: MagnifyingGlassIcon, path: '/documents' },
     { id: 'data', name: 'Business Data', icon: DocumentTextIcon, path: '/corpus/data_v1' },
     { id: 'regulations', name: 'Regulations', icon: ScaleIcon, path: '/corpus/regulations' },
-    { id: 'ontology', name: 'Ontology', icon: CubeIcon, path: '/corpus/ontology' },
+    // Hidden tabs - keep code but don't display
+    // { id: 'ontology', name: 'Ontology', icon: CubeIcon, path: '/corpus/ontology' },
   ];
 
   // Listen for upload completion events
@@ -76,6 +80,8 @@ function RouterContent({ activeTab, setActiveTab, tabs, isDemoMode, toggleDemoMo
     const path = location.pathname;
     if (path === '/chat') {
       setActiveTab('chat');
+    } else if (path === '/documents') {
+      setActiveTab('documents');
     } else if (path === '/corpus/data_v1') {
       setActiveTab('data');
     } else if (path === '/corpus/regulations') {
@@ -178,6 +184,7 @@ function RouterContent({ activeTab, setActiveTab, tabs, isDemoMode, toggleDemoMo
           <Routes>
             <Route path="/" element={<Navigate to="/chat" replace />} />
             <Route path="/chat" element={<Chat corpusFilter={null} />} />
+            <Route path="/documents" element={<FileSearch />} />
             <Route path="/corpus/data_v1" element={<CorpusExplorer corpusName="data_v1" />} />
             <Route path="/corpus/regulations" element={<CorpusExplorer corpusName="regulations" />} />
             <Route path="/corpus/ontology" element={<CorpusExplorer corpusName="ontology" />} />

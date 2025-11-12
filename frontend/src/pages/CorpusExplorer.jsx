@@ -6,11 +6,10 @@ import {
   DocumentArrowUpIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import riskAssessmentAPI from '../services/api';
 import { useDemoMode } from '../contexts/DemoModeContext';
 import { getMockResponse } from '../services/mockData';
+import CitationMarkdown from '../components/CitationMarkdown';
 
 const CORPUS_INFO = {
   data_v1: {
@@ -260,8 +259,9 @@ IMPORTANT:
   }, [corpusName]);
 
   const handleChatSend = async (questionText = null) => {
-    const messageText = questionText || chatInput;
-    if (!messageText.trim() || chatLoading) return;
+    // Handle case where questionText might be an event object
+    const messageText = (typeof questionText === 'string' ? questionText : null) || chatInput;
+    if (!messageText || !messageText.trim() || chatLoading) return;
 
     const userMessage = {
       role: 'user',
@@ -549,32 +549,7 @@ IMPORTANT:
                         }`}
                       >
                         {message.role === 'assistant' ? (
-                          <div className="markdown-content prose prose-sm max-w-none break-words overflow-wrap-anywhere">
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              components={{
-                                table: ({node, ...props}) => (
-                                  <div className="overflow-x-auto">
-                                    <table className="min-w-full table-auto border-collapse text-sm" {...props} />
-                                  </div>
-                                ),
-                                thead: ({node, ...props}) => (
-                                  <thead className="bg-gray-50" {...props} />
-                                ),
-                                th: ({node, ...props}) => (
-                                  <th className="px-3 py-2 border text-left font-semibold" {...props} />
-                                ),
-                                td: ({node, ...props}) => (
-                                  <td className="px-3 py-2 border align-top" {...props} />
-                                ),
-                                tr: ({node, ...props}) => (
-                                  <tr className="odd:bg-white even:bg-gray-50" {...props} />
-                                )
-                              }}
-                            >
-                              {message.content}
-                            </ReactMarkdown>
-                          </div>
+                          <CitationMarkdown content={message.content} />
                         ) : (
                           <p className="whitespace-pre-wrap break-words">{message.content}</p>
                         )}

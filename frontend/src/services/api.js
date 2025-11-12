@@ -322,28 +322,16 @@ const riskAssessmentAPI = {
           console.log('[API] Starting background upload for:', file.name);
           
           const response = await apiClient.post(
-            '/run',
+            `/apps/agents/users/user/sessions/${currentSessionId}`,
             {
-              app_name: 'agents',
-              user_id: 'user',
-              session_id: currentSessionId,
-              new_message: {
-                parts: [
-                  { 
-                    text: `I'm uploading a document "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Please:
+              user_input: `I'm uploading a document "${file.name}" (${(file.size / 1024).toFixed(1)} KB). Please:
 1. Use the save_file_to_gcs tool to save this file to Cloud Storage at gs://graph-rag-bucket/data/${file.name}
 2. Use the add_data tool to add it to the ${corpusName} corpus
-3. Confirm when the document has been successfully added to the knowledge base.` 
-                  },
-                  {
-                    inlineData: {
-                      mimeType: mimeType,
-                      data: fileBase64
-                    }
-                  }
-                ]
-              },
-              streaming: true
+3. Confirm when the document has been successfully added to the knowledge base.`,
+              inline_data: {
+                mime_type: mimeType,
+                data: fileBase64
+              }
             },
             { timeout: 300000 } // 5 minutes for large files
           );

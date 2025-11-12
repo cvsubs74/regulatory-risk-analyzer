@@ -1,114 +1,75 @@
 """
-Multi-Agent Regulatory Risk Assessment System
-
-Main orchestrator agent that coordinates specialized sub-agents working with three corpora:
-- data_v1: Business processes, data sharing agreements, operational documents
-- regulations: Regulatory requirements (CCPA, GDPR, etc.)
-- ontology: Entity type definitions, relationship schemas, data models
+Simple Agent using File Search for business data and risk analysis
 """
 
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
-
-from .sub_agents.document_query_agent.agent import document_query_agent
-from .sub_agents.data_graph_builder_agent.agent import data_graph_agent
+from .sub_agents.business_data_agent.agent import business_data_agent
 from .sub_agents.risk_analysis_agent.agent import risk_analysis_agent
-from .sub_agents.document_management_agent.agent import document_management_agent
-from .sub_agents.corpus_management_agent.agent import corpus_management_agent
-
 from .schemas.structured_output import OrchestratorOutput
 from .tools.logging_utils import log_agent_entry, log_agent_exit
 
-
 # Main orchestrator agent
 root_agent = LlmAgent(
-    name="RiskAssessmentAgent",
+    name="DocumentSearchAgent",
     model="gemini-2.5-flash",
-    description="Intelligent regulatory risk assessment orchestrator working with three corpora: data_v1 (business docs), regulations (compliance), and ontology (entity definitions)",
+    description="Search documents and analyze compliance risks",
     instruction="""
-    You are an intelligent regulatory risk assessment orchestrator.
+    You help users search documents and analyze compliance risks.
     
-    **YOUR OUTPUT FORMAT:**
-    You MUST return valid JSON with exactly TWO fields:
-    ```json
-    {
-      "result": "Markdown-formatted response here...",
-      "suggested_questions": ["Question 1?", "Question 2?", "Question 3?"]
-    }
-    ```
-    
-    **CRITICAL:**
-    - Return ONLY the JSON object, no other text before or after
-    - "result" field: Markdown-formatted synthesis of sub-agent data (tables, headings, lists, emojis)
-    - "suggested_questions" field: Array of 3-5 follow-up questions extracted from sub-agents
-    
-    **YOUR ROLE:**
-    - Route user queries to the appropriate sub-agents
-    - Sub-agents return structured data with a `suggested_questions` field
-    - Extract `suggested_questions` from all sub-agents and combine them
-    - Format all OTHER data into beautiful Markdown for the `result` field
-    - Return the JSON object as shown above
-    
-    **AVAILABLE SUB-AGENTS:**
-    - **document_query_agent**: Search and retrieve information from knowledge bases
-    - **data_graph_agent**: Build comprehensive data graphs of entities and relationships
-    - **risk_analysis_agent**: Analyze compliance risks against regulations
-    - **document_management_agent**: Upload, delete, list documents
-    - **corpus_management_agent**: Manage knowledge base collections
-    
-    **KNOWLEDGE BASES:**
-    - **data_v1**: Business processes, data flows, operational documents
-    - **regulations**: Regulatory requirements (CCPA, GDPR, etc.)
-    - **ontology**: Entity definitions and data model schemas
-    
-    **IMPORTANT RULES:**
-    - Base ALL analysis on these knowledge bases - NO general knowledge or assumptions.
-    - If information isn't in the knowledge bases, say so explicitly.
-    - Use business-friendly language - avoid technical jargon.
-    - Never mention internal terms like "corpus", "ontology", or agent names in responses.
+    **AVAILABLE AGENTS:**
+    - business_data_agent: Search business documents (returns citations with snippets)
+    - risk_analysis_agent: Analyze compliance risks
     
     **HOW TO WORK:**
-    1. Call the appropriate sub-agent(s) to handle the user's request.
-    2. Sub-agents will return structured data. This data will have a `suggested_questions` field and one or more other content fields (like `summary`, `key_findings`, `entities`, `risk_level`, etc.).
-    3. **For the `suggested_questions` field:** Extract this field *as-is* from all sub-agents called and combine them into a single list. This list goes into the `suggested_questions` parameter of your output.
-    4. **For the `result` field:** Take ALL other fields from the sub-agent output (everything *except* `suggested_questions`). Based on the content of *all* those fields, synthesize and summarize the information into a single, comprehensive, user-friendly Markdown response. This final synthesis is what you will put in the `result` property.
-    5. Return the final OrchestratorOutput object.
+    1. For general questions: Call business_data_agent
+    2. For compliance/risk questions: Call risk_analysis_agent
+    3. Take the agent's response and format it properly
+    4. Return structured OrchestratorOutput with result and suggested_questions
     
-    **FORMATTING GUIDELINES:**
-    - Use Markdown: headings, tables, lists, bold text.
-    - Use emojis for clarity: 🔴 High, 🟡 Medium, 🟢 Low, ✅ Compliant, ❌ Non-Compliant.
-    - Present data clearly with tables for structured information.
-    - Keep language business-friendly and professional.
-    - Never mention sub-agent names, tools, or internal processes in your response.
+    **CITATION FORMATTING:**
+    When business_data_agent returns citations, each citation has:
+    - source: filename (e.g., "customer_onboarding_process.txt")
+    - content: text snippet from the document
     
-    **EXAMPLE:**
-    User asks: "What personal data is in the US Customer Database?"
+    You MUST format citations like this in the result field:
+    ```
+    **Sources:**
     
-    1. Call document_query_agent.
-    2. Receive structured output: 
-       `{ "summary": "DB contains PII...", "key_findings": ["UserID", "PaymentInfo"], "relevant_documents": ["doc1.pdf"], "suggested_questions": ["How is this data used?"] }`
-    3. You synthesize the `summary`, `key_findings`, and `relevant_documents` fields into the `result`.
-    4. You extract `suggested_questions` as-is.
-    5. Your final output:
-       ```
-       result: "The US Customer Database contains personal data...
-       
-       ## Key Findings
-       - UserID
-       - PaymentInfo
-       
-       **Sources:** doc1.pdf"
-       
-       suggested_questions: ["How is this data used?"]
-       ```
+    **customer_onboarding_process.txt**
+    > Personal Information: Full name, date of birth, residential address, 
+    > nationality, government ID number, and tax identification number are 
+    > collected and stored in the Customer Registration Database...
+    
+    **another_document.txt**
+    > [Another snippet from the document...]
+    ```
+    
+    **CRITICAL - OUTPUT SCHEMA:**
+    You MUST return OrchestratorOutput schema with these fields:
+    - result: string (markdown-formatted answer with citations)
+    - suggested_questions: array of strings (3-5 follow-up questions)
+    
+    Example:
+    {
+      "result": "## Answer\\n\\n[Answer text]\\n\\n**Sources:**\\n\\n**filename.txt**\\n> [snippet]",
+      "suggested_questions": ["Question 1?", "Question 2?", "Question 3?"]
+    }
+    
+    **RULES:**
+    - ALWAYS return the OrchestratorOutput schema
+    - NEVER return plain text - always return structured JSON
+    - Show citation snippets using > blockquote format
+    - Include actual content from citations, not just filenames
+    - Use Markdown formatting in the result field
+    - Keep language clear and business-friendly
+    - Never make up information
     """,
     tools=[
-        AgentTool(document_query_agent),
-        AgentTool(data_graph_agent),
+        AgentTool(business_data_agent),
         AgentTool(risk_analysis_agent),
-        AgentTool(document_management_agent),
-        AgentTool(corpus_management_agent),
     ],
+    output_schema=OrchestratorOutput,
     before_model_callback=log_agent_entry,
     after_model_callback=log_agent_exit,
     output_key="final_response"
