@@ -90,8 +90,8 @@ const riskAssessmentAPI = {
             const stateKeys = Object.keys(event.actions.stateDelta);
             console.log('[API] State keys:', stateKeys);
             
-            // Look for common output keys
-            for (const key of ['final_response', 'result', 'output']) {
+            // Look for common output keys (including formatted_output from sequential agents)
+            for (const key of ['formatted_output', 'final_response', 'result', 'output']) {
               if (event.actions.stateDelta[key]) {
                 console.log(`[API] Found output in state key '${key}':`, event.actions.stateDelta[key]);
                 structuredOutput = event.actions.stateDelta[key];

@@ -12,6 +12,7 @@ import remarkGfm from 'remark-gfm';
 import riskAssessmentAPI from '../services/api';
 import { useDemoMode } from '../contexts/DemoModeContext';
 import { getMockResponse } from '../services/mockData';
+import CitationViewer from '../components/CitationViewer';
 
 // Initial sample queries for quick start - Business-focused questions only
 const INITIAL_QUERIES = [
@@ -30,6 +31,45 @@ const INITIAL_QUERIES = [
 
 // Store chat history for AI Assistant to persist across tab switches
 const aiAssistantChatHistory = { messages: [], suggestions: [] };
+
+/**
+ * Parse citations from markdown content
+ * Looks for **Sources:** section with **filename** and > quoted content
+ */
+function parseCitations(content) {
+  const citations = [];
+  
+  // Match the Sources section
+  const sourcesMatch = content.match(/\*\*Sources:\*\*([\s\S]*?)(?=\n\n[^>]|$)/);
+  if (!sourcesMatch) return citations;
+  
+  const sourcesSection = sourcesMatch[1];
+  
+  // Match each source: **filename** followed by > quoted lines
+  const sourcePattern = /\*\*([^*]+)\*\*\s*\n((?:>\s*[^\n]*\n?)+)/g;
+  let match;
+  
+  while ((match = sourcePattern.exec(sourcesSection)) !== null) {
+    const source = match[1].trim();
+    const content = match[2]
+      .split('\n')
+      .map(line => line.replace(/^>\s*/, '').trim())
+      .filter(line => line)
+      .join('\n');
+    
+    citations.push({ source, content });
+  }
+  
+  return citations;
+}
+
+/**
+ * Remove the Sources section from content to display it separately
+ */
+function removeCitationsFromContent(content) {
+  // Remove everything from **Sources:** onwards
+  return content.replace(/\*\*Sources:\*\*[\s\S]*$/, '').trim();
+}
 
 function Chat({ corpusFilter = null }) {
   const { isDemoMode } = useDemoMode();
@@ -305,9 +345,14 @@ IMPORTANT: Put ALL 6 questions in the "suggested_questions" array, not in the "r
         responseText = 'No response received';
       }
 
+      // Parse citations from the response
+      const citations = parseCitations(responseText);
+      const contentWithoutCitations = removeCitationsFromContent(responseText);
+
       const assistantMessage = {
         role: 'assistant',
-        content: responseText,
+        content: contentWithoutCitations,
+        citations: citations,
         timestamp: new Date().toISOString(),
       };
 
@@ -495,9 +540,14 @@ IMPORTANT: Put ALL 6 questions in the "suggested_questions" array, not in the "r
                   }`}
                 >
                   {message.role === 'assistant' ? (
-                    <div className="markdown-content prose prose-sm max-w-none break-words overflow-wrap-anywhere">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                    </div>
+                    <>
+                      <div className="markdown-content prose prose-sm max-w-none break-words overflow-wrap-anywhere">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                      </div>
+                      {message.citations && message.citations.length > 0 && (
+                        <CitationViewer citations={message.citations} />
+                      )}
+                    </>
                   ) : (
                     <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   )}

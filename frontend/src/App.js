@@ -27,10 +27,10 @@ function AppContent() {
 
   const tabs = [
     { id: 'chat', name: 'AI Assistant', icon: ChatBubbleLeftRightIcon, path: '/chat' },
-    { id: 'documents', name: 'Knowledgebase', icon: MagnifyingGlassIcon, path: '/documents' },
-    { id: 'data', name: 'Business Data', icon: DocumentTextIcon, path: '/corpus/data_v1' },
-    { id: 'regulations', name: 'Regulations', icon: ScaleIcon, path: '/corpus/regulations' },
-    // Hidden tabs - keep code but don't display
+    { id: 'documents', name: 'Documents', icon: MagnifyingGlassIcon, path: '/documents' },
+    // Hidden tabs - keep routes but don't display in navigation
+    // { id: 'data', name: 'Business Data', icon: DocumentTextIcon, path: '/corpus/data_v1' },
+    // { id: 'regulations', name: 'Regulations', icon: ScaleIcon, path: '/corpus/regulations' },
     // { id: 'ontology', name: 'Ontology', icon: CubeIcon, path: '/corpus/ontology' },
   ];
 

@@ -26,9 +26,10 @@ class RiskAnalysisOutput(BaseModel):
     medium_risks: List[RiskItem] = Field(default_factory=list, description="Medium risks")
     low_risks: List[RiskItem] = Field(default_factory=list, description="Low risks")
     executive_summary: str = Field(description="Summary")
-    recommendations_roadmap: Dict[str, List[str]] = Field(default_factory=dict, description="Roadmap")
+    recommendations_roadmap: str = Field(description="Prioritized roadmap of recommendations")
     information_gaps: List[str] = Field(default_factory=list, description="Gaps")
     regulation_sections_analyzed: List[str] = Field(default_factory=list, description="Sections")
+    citations: List['Citation'] = Field(default_factory=list, description="Source citations")
     suggested_questions: List[str] = Field(default_factory=list, description="Follow-up questions")
 
 
