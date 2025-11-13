@@ -38,6 +38,7 @@ venv.bak/
 .env
 .env.local
 .env.*.local
+cloud_functions/file_search_api/.env.yaml
 risk_assessment_agent/.env
 
 # IDEs
